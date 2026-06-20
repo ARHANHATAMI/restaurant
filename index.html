@@ -74,6 +74,7 @@ nav{
   background:radial-gradient(ellipse 700px 500px at 65% 50%,rgba(245,197,24,.05) 0%,transparent 65%);
   pointer-events:none;
 }
+.hero-text-col{position:relative;z-index:1}
 .hero-eyebrow{
   display:flex;align-items:center;gap:8px;
   color:var(--gold);font-size:11px;font-weight:700;letter-spacing:2px;
@@ -120,16 +121,12 @@ h1.hero-title .line2{color:var(--gold);display:block}
 }
 .hero-img{
   width:100%;height:100%;object-fit:cover;
-  border-radius:0;position:relative;z-index:2;
+  border-radius:18px;position:relative;z-index:2;
+  border:3px solid rgba(245,197,24,.55);
+  box-shadow:0 0 0 6px rgba(245,197,24,.12),0 25px 50px -10px rgba(0,0,0,.5);
   animation:heroFloat 6s ease-in-out infinite;
 }
 @keyframes heroFloat{0%,100%{transform:translateY(0) scale(1)}50%{transform:translateY(-12px) scale(1.01)}}
-.hero-img-glow{
-  position:absolute;bottom:0;right:0;left:0;
-  height:200px;
-  background:linear-gradient(to top,var(--dark),transparent);
-  z-index:3;pointer-events:none;
-}
 
 /* ══ CATEGORY BAR ══ */
 .category-bar{
@@ -231,6 +228,7 @@ h1.hero-title .line2{color:var(--gold);display:block}
   font-size:12px;color:rgba(255,255,255,.5);
 }
 .countdown-label{margin-left:8px}
+.countdown-clock{display:flex;align-items:center;gap:8px}
 .countdown-block{
   background:var(--dark3);border:1px solid var(--border);
   border-radius:8px;padding:6px 14px;text-align:center;min-width:54px;
@@ -272,48 +270,31 @@ h1.hero-title .line2{color:var(--gold);display:block}
 }
 .deal-card:hover .deal-img{transform:scale(1.06) rotate(-2deg)}
 
-/* ══ APP DOWNLOAD ══ */
-.app-section{
+/* ══ WHY US ══ */
+.why-section{
   background:var(--dark2);
   border-top:1px solid var(--border);
   border-bottom:1px solid var(--border);
   padding:70px 5%;
-  display:grid;grid-template-columns:1fr 1fr 1fr;
-  gap:40px;align-items:center;
 }
-.app-phone{
-  width:200px;
-  filter:drop-shadow(0 20px 40px rgba(0,0,0,.5));
-  border-radius:20px;
+.why-sub{color:rgba(255,255,255,.45);font-size:13px;max-width:440px;line-height:1.8}
+.why-grid{
+  display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-top:36px;
 }
-.app-text-side{}
-.app-eyebrow{
-  display:flex;align-items:center;gap:8px;
-  color:var(--gold);font-size:11px;font-weight:700;letter-spacing:2px;
-  text-transform:uppercase;margin-bottom:14px;
+.why-card{
+  background:var(--dark3);border:1px solid var(--border);
+  border-radius:14px;padding:26px 20px;text-align:center;
+  transition:all .25s;
 }
-.app-eyebrow::before{content:'—';opacity:.6}
-.app-title{font-size:32px;font-weight:900;letter-spacing:-.5px;margin-bottom:12px}
-.app-desc{color:rgba(255,255,255,.45);font-size:13px;line-height:1.8;margin-bottom:24px}
-.app-btns{display:flex;gap:12px;flex-wrap:wrap}
-.app-store-btn{
-  display:flex;align-items:center;gap:8px;
-  background:var(--dark3);border:1px solid rgba(255,255,255,.12);
-  padding:10px 16px;border-radius:10px;cursor:pointer;
-  transition:all .2s;
+.why-card:hover{transform:translateY(-4px);border-color:rgba(245,197,24,.25);box-shadow:0 16px 40px rgba(0,0,0,.4)}
+.why-icon{
+  width:54px;height:54px;border-radius:14px;
+  background:rgba(245,197,24,.1);
+  display:flex;align-items:center;justify-content:center;
+  font-size:26px;margin:0 auto 16px;
 }
-.app-store-btn:hover{background:var(--dark4);border-color:rgba(255,255,255,.25)}
-.app-store-icon{font-size:22px}
-.app-store-text{text-align:right}
-.app-store-small{font-size:9px;color:var(--muted);display:block}
-.app-store-name{font-size:13px;font-weight:700;color:#fff;display:block}
-.app-qr-side{display:flex;flex-direction:column;align-items:center;gap:12px}
-.qr-box{
-  width:110px;height:110px;background:#fff;
-  border-radius:12px;display:flex;align-items:center;justify-content:center;
-  font-size:11px;color:#000;text-align:center;padding:8px;
-}
-.qr-label{font-size:11px;color:var(--muted);text-align:center}
+.why-title{font-size:14px;font-weight:800;margin-bottom:8px;color:#fff}
+.why-desc{font-size:12px;color:rgba(255,255,255,.45);line-height:1.8}
 
 /* ══ FOOTER ══ */
 footer{background:var(--dark2);border-top:1px solid var(--border);padding:60px 5% 0}
@@ -541,15 +522,12 @@ textarea.form-input{height:90px;resize:none}
 @keyframes spin{to{transform:rotate(360deg)}}
 
 /* ══ RESPONSIVE ══ */
-@media(max-width:1100px){.menu-grid{grid-template-columns:repeat(3,1fr)}.footer-grid{grid-template-columns:1fr 1fr 1fr}}
+@media(max-width:1100px){.menu-grid{grid-template-columns:repeat(3,1fr)}.footer-grid{grid-template-columns:1fr 1fr 1fr}.why-grid{grid-template-columns:repeat(2,1fr)}}
 @media(max-width:900px){
-  .hero{grid-template-columns:1fr;padding:80px 5% 40px;gap:30px}
-  h1.hero-title{font-size:56px}
-  .hero-img-wrap{height:280px}
+  .hero{min-height:auto;grid-template-columns:1fr;padding:100px 5% 36px;gap:24px}
+  h1.hero-title{font-size:52px}
+  .hero-img-wrap{height:260px}
   .deals-grid{grid-template-columns:1fr}
-  .app-section{grid-template-columns:1fr;text-align:center}
-  .app-phone{margin:0 auto}
-  .app-btns{justify-content:center}
   .contact-grid{grid-template-columns:1fr}
 }
 @media(max-width:768px){
@@ -558,18 +536,27 @@ textarea.form-input{height:90px;resize:none}
   .bottom-tab{display:block}
   body{padding-bottom:62px}
   .cart-fab{bottom:74px}
-  h1.hero-title{font-size:46px}
+  h1.hero-title{font-size:44px}
+  .hero-desc{margin-bottom:22px}
+  .hero-btns{margin-bottom:22px}
+  .hero-img-wrap{height:230px}
   .footer-grid{grid-template-columns:1fr 1fr}
   .footer-grid > *:first-child{grid-column:1/-1}
 }
 @media(max-width:480px){
-  h1.hero-title{font-size:38px}
+  .hero{padding:96px 6% 32px;gap:20px}
+  h1.hero-title{font-size:36px}
+  .hero-desc{font-size:13px;margin-bottom:18px}
+  .hero-btns{gap:8px;margin-bottom:18px}
+  .btn-primary,.btn-secondary{padding:11px 18px;font-size:12px}
+  .hero-img-wrap{height:200px}
   .menu-grid{grid-template-columns:1fr}
   .deals-grid{grid-template-columns:1fr}
   .deal-img{width:120px;height:110px}
   .footer-grid{grid-template-columns:1fr}
   .footer-grid > *:first-child{grid-column:auto}
   .category-bar{justify-content:flex-start}
+  .why-grid{grid-template-columns:1fr}
 }
 </style>
 </head>
@@ -586,6 +573,9 @@ textarea.form-input{height:90px;resize:none}
     <a href="#contact">تماس</a>
   </div>
   <div class="nav-right">
+    <button class="nav-icon-btn" onclick="document.getElementById('track').scrollIntoView({behavior:'smooth',block:'start'})" title="پیگیری سفارش">
+      📦
+    </button>
     <button class="nav-icon-btn" onclick="toggleCart()" title="سبد خرید">
       🛒
       <span class="nav-cart-badge" id="navCartBadge">0</span>
@@ -596,7 +586,7 @@ textarea.form-input{height:90px;resize:none}
 
 <!-- HERO -->
 <section class="hero" id="home">
-  <div>
+  <div class="hero-text-col">
     <div class="status-pill open" id="statusBadge">
       <span class="status-dot"></span>
       <span id="statusText">اکنون باز هستیم</span>
@@ -621,7 +611,6 @@ textarea.form-input{height:90px;resize:none}
     <img class="hero-img"
       src="https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=800&q=80&auto=format&fit=crop&fm=webp"
       alt="برگر عمو رسول" loading="eager" fetchpriority="high" width="800" height="520">
-    <div class="hero-img-glow"></div>
   </div>
 </section>
 
@@ -660,11 +649,13 @@ textarea.form-input{height:90px;resize:none}
     <h2 class="section-title">بهترین پیشنهادات امروز</h2>
     <div class="countdown">
       <span class="countdown-label">پایان پیشنهاد:</span>
-      <div class="countdown-block"><span class="countdown-num" id="cdH">08</span><span class="countdown-unit">ساعت</span></div>
-      <span class="countdown-sep">:</span>
-      <div class="countdown-block"><span class="countdown-num" id="cdM">24</span><span class="countdown-unit">دقیقه</span></div>
-      <span class="countdown-sep">:</span>
-      <div class="countdown-block"><span class="countdown-num" id="cdS">36</span><span class="countdown-unit">ثانیه</span></div>
+      <div class="countdown-clock" dir="ltr">
+        <div class="countdown-block"><span class="countdown-num" id="cdH">08</span><span class="countdown-unit">ساعت</span></div>
+        <span class="countdown-sep">:</span>
+        <div class="countdown-block"><span class="countdown-num" id="cdM">24</span><span class="countdown-unit">دقیقه</span></div>
+        <span class="countdown-sep">:</span>
+        <div class="countdown-block"><span class="countdown-num" id="cdS">36</span><span class="countdown-unit">ثانیه</span></div>
+      </div>
     </div>
   </div>
   <div class="deals-grid reveal">
@@ -687,35 +678,34 @@ textarea.form-input{height:90px;resize:none}
   </div>
 </div>
 
-<!-- APP DOWNLOAD -->
-<div class="app-section" id="about">
-  <div style="display:flex;justify-content:center">
-    <img class="app-phone" src="https://images.unsplash.com/photo-1512941937669-90a1b58e7e9c?w=220&q=80&auto=format&fit=crop" alt="App">
+<!-- WHY US -->
+<div class="why-section" id="about">
+  <div class="section-eyebrow" style="justify-content:center">دلیلش رو ببین</div>
+  <div class="section-head" style="justify-content:center;text-align:center;flex-direction:column;align-items:center;gap:6px">
+    <h2 class="section-title">چرا عمو رسول؟</h2>
+    <p class="why-sub">از انتخاب مواد اولیه تا رسیدن به دستت، هر قدم با دقت طی می‌شه</p>
   </div>
-  <div class="app-text-side">
-    <div class="app-eyebrow">آسان و سریع</div>
-    <div class="app-title">دانلود اپلیکیشن ما</div>
-    <div class="app-desc">غذای مورد علاقه‌ات رو هر زمان، هر جا سفارش بده. تحویل سریع در درِ خانه‌ات.</div>
-    <div class="app-btns">
-      <div class="app-store-btn">
-        <span class="app-store-icon">🍎</span>
-        <div class="app-store-text">
-          <span class="app-store-small">Download on the</span>
-          <span class="app-store-name">App Store</span>
-        </div>
-      </div>
-      <div class="app-store-btn">
-        <span class="app-store-icon">▶</span>
-        <div class="app-store-text">
-          <span class="app-store-small">GET IT ON</span>
-          <span class="app-store-name">Google Play</span>
-        </div>
-      </div>
+  <div class="why-grid">
+    <div class="why-card reveal">
+      <div class="why-icon">🥩</div>
+      <div class="why-title">مواد اولیه تازه</div>
+      <div class="why-desc">گوشت و سبزیجات تازه، هر روز تهیه می‌شه — بدون نگه‌داری طولانی.</div>
     </div>
-  </div>
-  <div class="app-qr-side">
-    <div class="qr-box" style="font-size:9px;color:#333;line-height:1.4">📱<br>QR Code<br>اسکن کنید</div>
-    <div class="qr-label">برای دانلود اسکن کنید</div>
+    <div class="why-card reveal">
+      <div class="why-icon">⚡</div>
+      <div class="why-title">تحویل سریع</div>
+      <div class="why-desc">سفارش‌ها معمولاً زیر ۳۰ دقیقه به دستت می‌رسه.</div>
+    </div>
+    <div class="why-card reveal">
+      <div class="why-icon">👨‍🍳</div>
+      <div class="why-title">طعم اصیل و خاص</div>
+      <div class="why-desc">سس مخصوص و دستور پخت اختصاصی عمو رسول، فقط همین‌جا.</div>
+    </div>
+    <div class="why-card reveal">
+      <div class="why-icon">💬</div>
+      <div class="why-title">پشتیبانی همیشگی</div>
+      <div class="why-desc">برای هر سوال یا پیگیری سفارش، یه تماس یا پیام کافیه.</div>
+    </div>
   </div>
 </div>
 
@@ -834,6 +824,7 @@ textarea.form-input{height:90px;resize:none}
     <a href="#home" class="tab-item active" id="tab-home"><span class="tab-icon">🏠</span><span>خانه</span></a>
     <a href="#menu-section" class="tab-item" id="tab-menu"><span class="tab-icon">🍔</span><span>منو</span></a>
     <a href="#deals" class="tab-item" id="tab-deals"><span class="tab-icon">🏷</span><span>تخفیف</span></a>
+    <a href="#track" class="tab-item" id="tab-track"><span class="tab-icon">📦</span><span>پیگیری</span></a>
     <a href="#contact" class="tab-item" id="tab-contact"><span class="tab-icon">☎️</span><span>تماس</span></a>
   </div>
 </div>
@@ -1120,10 +1111,10 @@ document.querySelectorAll('a[href^="#"]').forEach(a=>{
 
 /* ══ BOTTOM TABS ══ */
 (function(){
-  const sections=['home','menu-section','deals','contact'];
-  const tabs=['home','menu','deals','contact'].map(id=>document.getElementById('tab-'+id));
+  const sections=['home','menu-section','deals','track','contact'];
+  const tabs=['home','menu','deals','track','contact'].map(id=>document.getElementById('tab-'+id));
   window.addEventListener('scroll',()=>{
-    let cur='home';sections.forEach(id=>{const el=document.getElementById(id);if(el&&window.scrollY>=el.offsetTop-130)cur=id==='menu-section'?'menu':id==='deals'?'deals':id});
+    let cur='home';sections.forEach(id=>{const el=document.getElementById(id);if(el&&window.scrollY>=el.offsetTop-130)cur=id==='menu-section'?'menu':id});
     tabs.forEach(t=>t&&t.classList.remove('active'));
     const at=document.getElementById('tab-'+cur);if(at)at.classList.add('active');
   },{passive:true});
