@@ -373,6 +373,7 @@ textarea.fi{resize:none;height:65px}
     <button class="nav-item" onclick="go('customers',this)"><span class="nav-icon">👥</span>مشتریان</button>
     <button class="nav-item" onclick="go('reports',this)"><span class="nav-icon">📈</span>گزارش‌ها</button>
     <button class="nav-item" onclick="go('messages',this)"><span class="nav-icon">💬</span>پیام‌ها<span class="nav-badge g" id="mb" style="display:none">0</span></button>
+    <button class="nav-item" onclick="go('monitoring',this)"><span class="nav-icon">🩺</span>مانیتورینگ<span class="nav-badge" id="moBadge" style="display:none">0</span></button>
     <div class="nav-label">مدیریت</div>
     <button class="nav-item" onclick="go('discounts',this)"><span class="nav-icon">🏷</span>تخفیف‌ها</button>
     <button class="nav-item" onclick="go('settings',this)"><span class="nav-icon">⚙️</span>تنظیمات</button>
@@ -512,6 +513,27 @@ textarea.fi{resize:none;height:65px}
       <div class="card"><div class="ch"><span class="ct">🏷 کدهای تخفیف</span></div><div id="discList"></div></div>
     </div>
 
+    <!-- MONITORING -->
+    <div class="page" id="page-monitoring">
+      <div class="fb">
+        <button class="fbtn active" onclick="fm('all',this)">همه</button>
+        <button class="fbtn" onclick="fm('error',this)">🔴 خطای سرور</button>
+        <button class="fbtn" onclick="fm('rate_limit',this)">⏱ Rate Limit</button>
+        <button class="fbtn" onclick="fm('auth_fail',this)">🔒 تلاش غیرمجاز</button>
+        <button class="fbtn" onclick="fm('order_failed',this)">🛒 سفارش ناموفق</button>
+        <button class="fbtn" onclick="fm('db_error',this)">💾 خطای دیتابیس</button>
+      </div>
+      <div class="sg" style="grid-template-columns:repeat(3,1fr)">
+        <div class="sc"><div class="sc-top"><div class="sc-icon b">📋</div></div><div class="sc-val" id="moTotal">—</div><div class="sc-label">رویداد ۲۴ ساعت اخیر</div></div>
+        <div class="sc"><div class="sc-top"><div class="sc-icon r">🔴</div></div><div class="sc-val" id="moErr">—</div><div class="sc-label">خطای سرور (۲۴ ساعت)</div></div>
+        <div class="sc"><div class="sc-top"><div class="sc-icon r">🔒</div></div><div class="sc-val" id="moAuth">—</div><div class="sc-label">تلاش غیرمجاز (۲۴ ساعت)</div></div>
+      </div>
+      <div class="card">
+        <div class="ch"><span class="ct" id="moTitle">رویدادها</span><button class="ca" onclick="loadMonitoring()">↻ بروزرسانی</button></div>
+        <div style="overflow-x:auto"><table class="tbl"><thead><tr><th>نوع</th><th>مسیر</th><th>IP</th><th>پیام</th><th>زمان</th></tr></thead><tbody id="moTb"></tbody></table></div>
+      </div>
+    </div>
+
     <!-- SETTINGS -->
     <div class="page" id="page-settings">
       <div class="ss"><div class="ss-title">🏪 اطلاعات رستوران</div>
@@ -581,11 +603,11 @@ const SUPABASE_KEY='sb_publishable_4Rvuz7Fgzib_guZKnPplAA_uSpIGAYv';
 // همون Worker اول — یه Worker برای همه
 const ADMIN_API='https://proud-wind-23ebamo-rasoul-api.arhanhatmi.workers.dev';
 
-let orders=[],messages=[],menuItems=[],tables=[],couriers=[],discounts=[];
-let orderFilter='all',miEditId=null;
+let orders=[],messages=[],menuItems=[],tables=[],couriers=[],discounts=[],monitoringEvents=[];
+let orderFilter='all',miEditId=null,monitoringFilter='all';
 let currentSession=null;
 
-const PAGE_TITLES={dashboard:'داشبورد',orders:'سفارش‌ها',menu:'منو',tables:'میزها',couriers:'پیک‌ها',customers:'مشتریان',reports:'گزارش‌ها',messages:'پیام‌های مشتریان',discounts:'تخفیف‌ها',settings:'تنظیمات'};
+const PAGE_TITLES={dashboard:'داشبورد',orders:'سفارش‌ها',menu:'منو',tables:'میزها',couriers:'پیک‌ها',customers:'مشتریان',reports:'گزارش‌ها',messages:'پیام‌های مشتریان',monitoring:'مانیتورینگ',discounts:'تخفیف‌ها',settings:'تنظیمات'};
 
 // helper — همه درخواست‌های ادمین با token
 function adminFetch(path, opts={}) {
@@ -759,6 +781,7 @@ function go(name,el){
   if(name==='customers')renderCustomers();
   if(name==='reports')renderReports();
   if(name==='messages')loadMessages();
+  if(name==='monitoring')loadMonitoring();
   if(name==='discounts')renderDiscounts();
 }
 
@@ -1326,7 +1349,46 @@ async function toggleDisc(id,active){
   toast(active?'✅ فعال شد':'🔴 غیرفعال شد',active?'ok':'err');
 }
 
+// MONITORING
+async function loadMonitoring(){
+  const r=await adminFetch('/admin/monitoring?limit=300');
+  const m=r.ok?await r.json():null;
+  monitoringEvents=m||[];
+  const dayAgo=Date.now()-86400000;
+  const last24=monitoringEvents.filter(e=>new Date(e.created_at).getTime()>dayAgo);
+  document.getElementById('moTotal').textContent=last24.length.toLocaleString('fa-IR');
+  document.getElementById('moErr').textContent=last24.filter(e=>e.type==='error').length.toLocaleString('fa-IR');
+  document.getElementById('moAuth').textContent=last24.filter(e=>e.type==='auth_fail').length.toLocaleString('fa-IR');
+  const badge=document.getElementById('moBadge');
+  const recentErrCount=last24.filter(e=>e.type==='error'||e.type==='auth_fail').length;
+  badge.textContent=recentErrCount;badge.style.display=recentErrCount?'inline':'none';
+  renderMonitoring();
+}
+
+function fm(t,btn){
+  monitoringFilter=t;
+  document.querySelectorAll('#page-monitoring .fbtn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  renderMonitoring();
+}
+
+function renderMonitoring(){
+  const TYPE_LABEL={error:'🔴 خطای سرور',rate_limit:'⏱ Rate Limit',auth_fail:'🔒 تلاش غیرمجاز',order_failed:'🛒 سفارش ناموفق',db_error:'💾 خطای دیتابیس'};
+  let f=monitoringFilter==='all'?monitoringEvents:monitoringEvents.filter(e=>e.type===monitoringFilter);
+  document.getElementById('moTitle').textContent=`رویدادها (${f.length})`;
+  const tb=document.getElementById('moTb');
+  if(!f.length){tb.innerHTML='<tr><td colspan="5" style="text-align:center;padding:24px;color:var(--muted)">📭 رویدادی ثبت نشده</td></tr>';return;}
+  tb.innerHTML=f.map(e=>`<tr>
+    <td style="white-space:nowrap">${TYPE_LABEL[e.type]||esc(e.type)}</td>
+    <td style="font-size:11px;color:var(--muted)">${esc(e.path)||'—'}</td>
+    <td dir="ltr" style="font-size:11px">${esc(e.ip)||'—'}</td>
+    <td style="font-size:11px;max-width:260px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${esc(e.message)}">${esc(e.message)||'—'}</td>
+    <td style="font-size:11px;color:var(--muted);white-space:nowrap">${ft(e.created_at)}</td>
+  </tr>`).join('');
+}
+
 // HELPERS
+function esc(str){const d=document.createElement('div');d.textContent=String(str==null?'':str);return d.innerHTML;}
 function parseItems(items){
   if(!items)return[];
   if(typeof items==='string'){try{return JSON.parse(items);}catch{return[{name:items,qty:1,price:0}];}}
