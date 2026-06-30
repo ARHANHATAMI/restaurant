@@ -745,6 +745,7 @@ async function doLogout(){
   }catch{}
   localStorage.removeItem('sb_admin_session');
   currentSession=null;
+  stopPolling();
   // پاک کردن داده‌ها
   orders=[];messages=[];menuItems=[];tables=[];couriers=[];discounts=[];
   showLogin();
@@ -815,8 +816,12 @@ async function init(){
   menuItems=mi||[];
   discounts=d||[];
 
+  // baseline برای پولینگ زنده — اولین بار نوتیف نده، فقط مرجع رو ست کن
+  lastMsgId = messages[0]?.id ?? 0;
+
   renderDashboard();
   updateBadges();
+  startPolling();
 }
 
 // DASHBOARD
@@ -1284,6 +1289,10 @@ async function loadMessages(){
   const r=await adminFetch('/admin/messages');
   const m=r.ok?await r.json():null;
   if(m)messages=m;
+  renderMsgList();
+}
+
+function renderMsgList(){
   const el=document.getElementById('msgList');
   if(!messages.length){el.innerHTML='<div class="empty"><big>💬</big><p>هنوز پیامی نیست</p></div>';return;}
   el.innerHTML=messages.map((m,i)=>`<div class="msg-item unread" id="mi${i}">
@@ -1413,6 +1422,113 @@ function toast(msg,type=''){
   t.classList.add('show');clearTimeout(t._t);
   t._t=setTimeout(()=>t.classList.remove('show'),3000);
 }
+
+// ══════════════════════════════════════════
+//  LIVE POLLING — پیام و خطای جدید لحظه‌ای
+// ══════════════════════════════════════════
+const CRITICAL_MONITORING_TYPES=['error','auth_fail','db_error','order_failed'];
+let lastMsgId=null;        // آخرین id پیامی که دیدیم (baseline در init ست می‌شه)
+let lastEventId=null;      // آخرین id رویداد مانیتورینگ (اولین پول baseline می‌گیره، بی‌صدا)
+let pollTimer=null;
+const POLL_INTERVAL_MS=15000; // هر ۱۵ ثانیه
+
+function requestNotifPermission(){
+  if('Notification' in window && Notification.permission==='default'){
+    Notification.requestPermission().catch(()=>{});
+  }
+}
+
+function pushBrowserNotif(title,body){
+  if(!('Notification' in window) || Notification.permission!=='granted')return;
+  try{
+    const n=new Notification(title,{body,tag:title+Date.now()});
+    n.onclick=()=>{window.focus();n.close();};
+  }catch{}
+}
+
+// بیپ کوتاه با Web Audio — بدون نیاز به فایل صوتی خارجی
+function beep(){
+  try{
+    const ctx=new (window.AudioContext||window.webkitAudioContext)();
+    const o=ctx.createOscillator(),g=ctx.createGain();
+    o.connect(g);g.connect(ctx.destination);
+    o.type='sine';o.frequency.value=880;g.gain.value=0.09;
+    o.start();
+    setTimeout(()=>{o.stop();ctx.close();},220);
+  }catch{}
+}
+
+function updateMonitoringBadgeFrom(events){
+  const dayAgo=Date.now()-86400000;
+  const last24=events.filter(e=>new Date(e.created_at).getTime()>dayAgo);
+  const recentErrCount=last24.filter(e=>CRITICAL_MONITORING_TYPES.includes(e.type)).length;
+  const badge=document.getElementById('moBadge');
+  if(badge){badge.textContent=recentErrCount;badge.style.display=recentErrCount?'inline':'none';}
+}
+
+async function pollUpdates(){
+  if(!currentSession)return;
+  try{
+    const [mr,er]=await Promise.all([
+      adminFetch('/admin/messages').then(r=>r.ok?r.json():null).catch(()=>null),
+      adminFetch('/admin/monitoring?limit=50').then(r=>r.ok?r.json():null).catch(()=>null),
+    ]);
+
+    // ── پیام‌های جدید ──
+    if(mr){
+      const newest=mr[0]?.id ?? null;
+      if(lastMsgId!==null && newest!==null && newest>lastMsgId){
+        const fresh=mr.filter(m=>m.id>lastMsgId).reverse();
+        fresh.forEach(m=>{
+          toast('💬 پیام جدید از '+(m.customer_name||'ناشناس'),'ok');
+          pushBrowserNotif('💬 پیام جدید — عمو رسول',(m.customer_name||'ناشناس')+': '+(m.message||'').slice(0,80));
+        });
+        if(fresh.length)beep();
+      }
+      messages=mr;
+      lastMsgId=newest ?? lastMsgId;
+      updateBadges();
+      if(document.getElementById('page-messages')?.classList.contains('active'))renderMsgList();
+      if(document.getElementById('page-dashboard')?.classList.contains('active'))renderDashMessages();
+    }
+
+    // ── رویدادهای بحرانی جدید (خطا/تلاش غیرمجاز/...) ──
+    if(er){
+      const newest=er[0]?.id ?? null;
+      if(lastEventId!==null && newest!==null && newest>lastEventId){
+        const fresh=er.filter(e=>e.id>lastEventId && CRITICAL_MONITORING_TYPES.includes(e.type)).reverse();
+        const LBL={error:'🔴 خطای سرور',auth_fail:'🔒 تلاش غیرمجاز',order_failed:'🛒 سفارش ناموفق',db_error:'💾 خطای دیتابیس'};
+        fresh.forEach(e=>{
+          toast((LBL[e.type]||e.type)+' — جدید','err');
+          pushBrowserNotif('⚠️ هشدار مانیتورینگ — عمو رسول',(LBL[e.type]||e.type)+(e.message?': '+e.message.slice(0,80):''));
+        });
+        if(fresh.length)beep();
+      }
+      updateMonitoringBadgeFrom(er);
+      const hadNew=lastEventId!==null && newest!==null && newest>lastEventId;
+      lastEventId=newest ?? lastEventId;
+      // اگه صفحه مانیتورینگ بازه و رویداد جدید اومده، کل لیست رو با جزئیات کامل رفرش کن
+      if(hadNew && document.getElementById('page-monitoring')?.classList.contains('active')){
+        loadMonitoring();
+      }
+    }
+  }catch{}
+}
+
+function startPolling(){
+  stopPolling();
+  requestNotifPermission();
+  pollTimer=setInterval(pollUpdates,POLL_INTERVAL_MS);
+}
+function stopPolling(){
+  if(pollTimer){clearInterval(pollTimer);pollTimer=null;}
+  lastMsgId=null;lastEventId=null;
+}
+// اگه تب از حالت پنهان به نمایان برگرده، یه بار سریع آپدیت کن
+document.addEventListener('visibilitychange',()=>{
+  if(document.visibilityState==='visible' && currentSession)pollUpdates();
+});
+
 </script>
 </body>
 </html>
