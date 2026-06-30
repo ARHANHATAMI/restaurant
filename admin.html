@@ -515,22 +515,39 @@ textarea.fi{resize:none;height:65px}
 
     <!-- MONITORING -->
     <div class="page" id="page-monitoring">
+
+      <!-- هشدار سفارش‌های گیرکرده -->
+      <div id="stuckOrdersBanner" style="display:none;background:rgba(230,57,70,.08);border:1px solid rgba(230,57,70,.25);border-radius:12px;padding:14px 16px;margin-bottom:14px">
+        <div style="display:flex;align-items:center;gap:8px;font-weight:800;color:#f87171;margin-bottom:8px;font-size:13px">🚨 سفارش‌های گیرکرده</div>
+        <div id="stuckOrdersList" style="display:flex;flex-direction:column;gap:6px"></div>
+      </div>
+
       <div class="fb">
         <button class="fbtn active" onclick="fm('all',this)">همه</button>
         <button class="fbtn" onclick="fm('error',this)">🔴 خطای سرور</button>
+        <button class="fbtn" onclick="fm('business_alert',this)">🚨 هشدار کسب‌وکاری</button>
+        <button class="fbtn" onclick="fm('client_error',this)">🖥 خطای کلاینت</button>
         <button class="fbtn" onclick="fm('rate_limit',this)">⏱ Rate Limit</button>
         <button class="fbtn" onclick="fm('auth_fail',this)">🔒 تلاش غیرمجاز</button>
         <button class="fbtn" onclick="fm('order_failed',this)">🛒 سفارش ناموفق</button>
         <button class="fbtn" onclick="fm('db_error',this)">💾 خطای دیتابیس</button>
       </div>
-      <div class="sg" style="grid-template-columns:repeat(3,1fr)">
+
+      <div class="sg" style="grid-template-columns:repeat(4,1fr)">
         <div class="sc"><div class="sc-top"><div class="sc-icon b">📋</div></div><div class="sc-val" id="moTotal">—</div><div class="sc-label">رویداد ۲۴ ساعت اخیر</div></div>
-        <div class="sc"><div class="sc-top"><div class="sc-icon r">🔴</div></div><div class="sc-val" id="moErr">—</div><div class="sc-label">خطای سرور (۲۴ ساعت)</div></div>
-        <div class="sc"><div class="sc-top"><div class="sc-icon r">🔒</div></div><div class="sc-val" id="moAuth">—</div><div class="sc-label">تلاش غیرمجاز (۲۴ ساعت)</div></div>
+        <div class="sc"><div class="sc-top"><div class="sc-icon r">🔴</div></div><div class="sc-val" id="moCrit">—</div><div class="sc-label">بحرانی (۲۴ ساعت)</div></div>
+        <div class="sc"><div class="sc-top"><div class="sc-icon g">🟡</div></div><div class="sc-val" id="moWarn">—</div><div class="sc-label">هشدار (۲۴ ساعت)</div></div>
+        <div class="sc"><div class="sc-top"><div class="sc-icon r">🐢</div></div><div class="sc-val" id="moStuck">—</div><div class="sc-label">سفارش گیرکرده الان</div></div>
       </div>
+
+      <div class="card">
+        <div class="ch"><span class="ct">📈 روند رویدادها — ۲۴ ساعت اخیر</span></div>
+        <div class="chart-wrap" style="height:160px"><svg class="chart-svg" id="moChart" viewBox="0 0 600 140" preserveAspectRatio="none"></svg></div>
+      </div>
+
       <div class="card">
         <div class="ch"><span class="ct" id="moTitle">رویدادها</span><button class="ca" onclick="loadMonitoring()">↻ بروزرسانی</button></div>
-        <div style="overflow-x:auto"><table class="tbl"><thead><tr><th>نوع</th><th>مسیر</th><th>IP</th><th>پیام</th><th>زمان</th></tr></thead><tbody id="moTb"></tbody></table></div>
+        <div style="overflow-x:auto"><table class="tbl"><thead><tr><th>شدت</th><th>نوع</th><th>مسیر</th><th>IP</th><th>پیام</th><th>زمان</th></tr></thead><tbody id="moTb"></tbody></table></div>
       </div>
     </div>
 
@@ -1359,19 +1376,72 @@ async function toggleDisc(id,active){
 }
 
 // MONITORING
+const SEVERITY_LABEL={critical:'🔴 بحرانی',warning:'🟡 هشدار',info:'🔵 اطلاع'};
+const SEVERITY_COLOR={critical:'#f87171',warning:'#f5c518',info:'#60a5fa'};
+
 async function loadMonitoring(){
-  const r=await adminFetch('/admin/monitoring?limit=300');
-  const m=r.ok?await r.json():null;
-  monitoringEvents=m||[];
+  const [er,sr]=await Promise.all([
+    adminFetch('/admin/monitoring?limit=300').then(r=>r.ok?r.json():null).catch(()=>null),
+    adminFetch('/admin/monitoring/stats').then(r=>r.ok?r.json():null).catch(()=>null),
+  ]);
+  monitoringEvents=er||[];
+
   const dayAgo=Date.now()-86400000;
   const last24=monitoringEvents.filter(e=>new Date(e.created_at).getTime()>dayAgo);
   document.getElementById('moTotal').textContent=last24.length.toLocaleString('fa-IR');
-  document.getElementById('moErr').textContent=last24.filter(e=>e.type==='error').length.toLocaleString('fa-IR');
-  document.getElementById('moAuth').textContent=last24.filter(e=>e.type==='auth_fail').length.toLocaleString('fa-IR');
+  document.getElementById('moCrit').textContent=last24.filter(e=>e.severity==='critical').length.toLocaleString('fa-IR');
+  document.getElementById('moWarn').textContent=last24.filter(e=>e.severity==='warning').length.toLocaleString('fa-IR');
+
   const badge=document.getElementById('moBadge');
-  const recentErrCount=last24.filter(e=>e.type==='error'||e.type==='auth_fail').length;
-  badge.textContent=recentErrCount;badge.style.display=recentErrCount?'inline':'none';
+  const critCount=last24.filter(e=>e.severity==='critical').length;
+  badge.textContent=critCount;badge.style.display=critCount?'inline':'none';
+
+  if(sr){
+    renderMonitoringChart(sr.buckets||[]);
+    renderStuckOrders(sr.business||{stuck_pending:[],stuck_preparing:[]});
+  }
+
   renderMonitoring();
+}
+
+function renderMonitoringChart(buckets){
+  const svg=document.getElementById('moChart');
+  if(!svg||!buckets.length)return;
+  const W=600,H=140,pl=20,pr=20,pt=14,pb=24,cw=W-pl-pr,ch=H-pt-pb;
+  const maxV=Math.max(...buckets.map(b=>b.total),1);
+  const n=buckets.length;
+  const barW=cw/n*0.62;
+  let h='';
+  [0,1,2,3].forEach(i=>{const y=pt+i/3*ch;h+=`<line x1="${pl}" y1="${y}" x2="${W-pr}" y2="${y}" stroke="rgba(255,255,255,.04)" stroke-width="1"/>`;});
+  buckets.forEach((b,i)=>{
+    const x=pl+(i+0.19)/n*cw;
+    let yCursor=H-pb;
+    const segs=[['critical',b.critical,'#f87171'],['warning',b.warning,'#f5c518'],['info',b.info,'#60a5fa']];
+    segs.forEach(([key,val,col])=>{
+      if(!val)return;
+      const segH=(val/maxV)*ch;
+      yCursor-=segH;
+      h+=`<rect x="${x}" y="${yCursor}" width="${barW}" height="${segH}" fill="${col}" opacity="0.85" rx="1.5"/>`;
+    });
+    if(i%4===0)h+=`<text x="${x+barW/2}" y="${H-7}" fill="rgba(255,255,255,.35)" font-size="9" text-anchor="middle">${b.hour}</text>`;
+  });
+  svg.innerHTML=h||`<text x="${W/2}" y="${H/2}" fill="rgba(255,255,255,.3)" font-size="11" text-anchor="middle">داده‌ای نیست</text>`;
+}
+
+function renderStuckOrders(business){
+  const banner=document.getElementById('stuckOrdersBanner');
+  const list=document.getElementById('stuckOrdersList');
+  const all=[
+    ...(business.stuck_pending||[]).map(o=>({...o,label:'در انتظار تایید'})),
+    ...(business.stuck_preparing||[]).map(o=>({...o,label:'در حال آماده‌سازی'})),
+  ];
+  document.getElementById('moStuck').textContent=all.length.toLocaleString('fa-IR');
+  if(!all.length){banner.style.display='none';return;}
+  banner.style.display='block';
+  list.innerHTML=all.map(o=>`<div style="display:flex;justify-content:space-between;align-items:center;font-size:12px;background:rgba(0,0,0,.2);padding:7px 11px;border-radius:7px">
+    <span>سفارش <b style="color:var(--gold)">#${o.id}</b> — ${esc(o.customer_name)||'ناشناس'} — ${o.label}</span>
+    <span style="color:#f87171;font-weight:700">${o.minutes} دقیقه</span>
+  </div>`).join('');
 }
 
 function fm(t,btn){
@@ -1382,18 +1452,22 @@ function fm(t,btn){
 }
 
 function renderMonitoring(){
-  const TYPE_LABEL={error:'🔴 خطای سرور',rate_limit:'⏱ Rate Limit',auth_fail:'🔒 تلاش غیرمجاز',order_failed:'🛒 سفارش ناموفق',db_error:'💾 خطای دیتابیس'};
+  const TYPE_LABEL={error:'🔴 خطای سرور',rate_limit:'⏱ Rate Limit',auth_fail:'🔒 تلاش غیرمجاز',order_failed:'🛒 سفارش ناموفق',db_error:'💾 خطای دیتابیس',client_error:'🖥 خطای کلاینت',business_alert:'🚨 هشدار کسب‌وکاری'};
   let f=monitoringFilter==='all'?monitoringEvents:monitoringEvents.filter(e=>e.type===monitoringFilter);
   document.getElementById('moTitle').textContent=`رویدادها (${f.length})`;
   const tb=document.getElementById('moTb');
-  if(!f.length){tb.innerHTML='<tr><td colspan="5" style="text-align:center;padding:24px;color:var(--muted)">📭 رویدادی ثبت نشده</td></tr>';return;}
-  tb.innerHTML=f.map(e=>`<tr>
+  if(!f.length){tb.innerHTML='<tr><td colspan="6" style="text-align:center;padding:24px;color:var(--muted)">📭 رویدادی ثبت نشده</td></tr>';return;}
+  tb.innerHTML=f.map(e=>{
+    const sev=e.severity||'info';
+    return `<tr>
+    <td><span style="color:${SEVERITY_COLOR[sev]};font-size:11px;font-weight:700;white-space:nowrap">${SEVERITY_LABEL[sev]}</span></td>
     <td style="white-space:nowrap">${TYPE_LABEL[e.type]||esc(e.type)}</td>
     <td style="font-size:11px;color:var(--muted)">${esc(e.path)||'—'}</td>
     <td dir="ltr" style="font-size:11px">${esc(e.ip)||'—'}</td>
     <td style="font-size:11px;max-width:260px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${esc(e.message)}">${esc(e.message)||'—'}</td>
     <td style="font-size:11px;color:var(--muted);white-space:nowrap">${ft(e.created_at)}</td>
-  </tr>`).join('');
+  </tr>`;
+  }).join('');
 }
 
 // HELPERS
@@ -1426,7 +1500,7 @@ function toast(msg,type=''){
 // ══════════════════════════════════════════
 //  LIVE POLLING — پیام و خطای جدید لحظه‌ای
 // ══════════════════════════════════════════
-const CRITICAL_MONITORING_TYPES=['error','auth_fail','db_error','order_failed'];
+const CRITICAL_MONITORING_TYPES=['error','auth_fail','db_error','order_failed','business_alert'];
 let lastMsgId=null;        // آخرین id پیامی که دیدیم (baseline در init ست می‌شه)
 let lastEventId=null;      // آخرین id رویداد مانیتورینگ (اولین پول baseline می‌گیره، بی‌صدا)
 let pollTimer=null;
@@ -1497,7 +1571,7 @@ async function pollUpdates(){
       const newest=er[0]?.id ?? null;
       if(lastEventId!==null && newest!==null && newest>lastEventId){
         const fresh=er.filter(e=>e.id>lastEventId && CRITICAL_MONITORING_TYPES.includes(e.type)).reverse();
-        const LBL={error:'🔴 خطای سرور',auth_fail:'🔒 تلاش غیرمجاز',order_failed:'🛒 سفارش ناموفق',db_error:'💾 خطای دیتابیس'};
+        const LBL={error:'🔴 خطای سرور',auth_fail:'🔒 تلاش غیرمجاز',order_failed:'🛒 سفارش ناموفق',db_error:'💾 خطای دیتابیس',business_alert:'🚨 هشدار کسب‌وکاری',client_error:'🖥 خطای کلاینت'};
         fresh.forEach(e=>{
           toast((LBL[e.type]||e.type)+' — جدید','err');
           pushBrowserNotif('⚠️ هشدار مانیتورینگ — عمو رسول',(LBL[e.type]||e.type)+(e.message?': '+e.message.slice(0,80):''));
