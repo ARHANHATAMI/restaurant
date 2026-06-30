@@ -1049,7 +1049,7 @@ async function submitOrder(){
       },800);
     }
     else throw new Error();
-  }catch(e){showToast('❌ خطا در ثبت سفارش','error');btn.disabled=false;btn.textContent='ثبت سفارش 🚀'}
+  }catch(e){showToast('❌ خطا در ثبت سفارش','error');window.reportClientError&&window.reportClientError('submitOrder failed: '+e.message,{stack:e.stack});btn.disabled=false;btn.textContent='ثبت سفارش 🚀'}
 }
 
 /* ══ CONTACT ══ */
@@ -1062,7 +1062,7 @@ async function sendMessage(){
     const r=await apiPost('/messages',{customer_name:name,phone,message});
     if(r.ok||r.status===201){showToast('✓ پیام ارسال شد');document.getElementById('msgName').value='';document.getElementById('msgPhone').value='';document.getElementById('msgText').value=''}
     else throw new Error();
-  }catch(e){showToast('❌ خطا در ارسال','error')}
+  }catch(e){showToast('❌ خطا در ارسال','error');window.reportClientError&&window.reportClientError('sendMessage failed: '+e.message,{stack:e.stack});}
 }
 
 /* ══ TOAST ══ */
@@ -1240,6 +1240,44 @@ document.getElementById('trackPhone').addEventListener('keydown',e=>{if(e.key===
     ctx.fillStyle='#fff';ctx.font='bold 10px Vazirmatn,sans-serif';ctx.fillText('عمو رسول',W/2,H/2+21);
   }
   setTimeout(()=>{if(!n)pin()},5000);
+})();
+/* ══ CLIENT ERROR LOGGING ══ */
+(function () {
+  let errCount = 0;
+  const MAX_ERR_REPORTS = 5;
+
+  function reportClientError(message, extra = {}) {
+    if (errCount >= MAX_ERR_REPORTS) return;
+    errCount++;
+    try {
+      fetch(API + '/client-error', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          message: String(message || 'unknown error').slice(0, 500),
+          url: location.href,
+          line: extra.line || null,
+          col: extra.col || null,
+          stack: extra.stack ? String(extra.stack).slice(0, 1000) : '',
+        }),
+        keepalive: true,
+      }).catch(() => {});
+    } catch {}
+  }
+
+  window.addEventListener('error', (e) => {
+    reportClientError(e.message, { line: e.lineno, col: e.colno, stack: e.error?.stack });
+  });
+
+  window.addEventListener('unhandledrejection', (e) => {
+    const reason = e.reason;
+    reportClientError(
+      typeof reason === 'string' ? reason : (reason?.message || 'unhandled promise rejection'),
+      { stack: reason?.stack }
+    );
+  });
+
+  window.reportClientError = reportClientError;
 })();
 </script>
 </body>
