@@ -888,7 +888,7 @@ function renderRecentOrders(){
   el.innerHTML=r.map(o=>{
     const items=parseItems(o.items);
     return `<div class="oli"><div class="oli-ic">${em[o.status]||'🛒'}</div>
-    <div style="flex:1;min-width:0"><div class="oli-name">${o.customer_name||'ناشناس'} <span style="font-size:10px;color:var(--gold)">#${o.id}</span></div>
+    <div style="flex:1;min-width:0"><div class="oli-name">${esc(o.customer_name)||'ناشناس'} <span style="font-size:10px;color:var(--gold)">#${o.id}</span></div>
     <div class="oli-sub">${items.length} آیتم · ${ft(o.created_at)}</div></div>
     <div class="oli-price">${(o.total||0).toLocaleString('fa-IR')}T</div></div>`;
   }).join('');
@@ -902,7 +902,7 @@ function renderPopular(){
   if(!s.length){el.innerHTML='<div class="empty"><big>📭</big></div>';return;}
   const mx=s[0][1];
   el.innerHTML=s.map(([n,c],i)=>`<div class="pi"><div class="pi-rank ${i===0?'top':''}">${i+1}</div>
-  <div class="pi-name">${n}</div><div class="pi-cnt">${c}×</div>
+  <div class="pi-name">${esc(n)}</div><div class="pi-cnt">${c}×</div>
   <div class="pi-bar"><div class="pi-fill" style="width:${(c/mx*100).toFixed(0)}%"></div></div></div>`).join('');
 }
 
@@ -911,8 +911,8 @@ function renderDashMessages(){
   if(!messages.length){el.innerHTML='<div class="empty"><big>💬</big><p>بدون پیام</p></div>';return;}
   el.innerHTML=messages.slice(0,4).map(m=>`<div class="msg-item unread">
     <div class="msg-dot"></div>
-    <div><div class="msg-title">${m.customer_name||'ناشناس'} <span style="font-size:10px;color:var(--muted)">${m.phone||''}</span></div>
-    <div class="msg-body">${(m.message||'').substring(0,70)}${(m.message||'').length>70?'...':''}</div>
+    <div><div class="msg-title">${esc(m.customer_name)||'ناشناس'} <span style="font-size:10px;color:var(--muted)">${esc(m.phone)||''}</span></div>
+    <div class="msg-body">${esc((m.message||'').substring(0,70))}${(m.message||'').length>70?'...':''}</div>
     <div class="msg-time">${ft(m.created_at)}</div></div></div>`).join('');
 }
 
@@ -939,9 +939,9 @@ function renderOrders(){
   tb.innerHTML=f.map(o=>{
     const items=parseItems(o.items);
     const is=items.slice(0,2).map(i=>`${i.name}×${i.qty||1}`).join('، ')+(items.length>2?` +${items.length-2}`:'');
-    return `<tr><td><span class="oid">#${o.id}</span></td><td>${o.customer_name||'—'}</td>
-    <td dir="ltr" style="font-size:11px">${o.phone||'—'}</td>
-    <td style="max-width:160px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:11px">${is}</td>
+    return `<tr><td><span class="oid">#${o.id}</span></td><td>${esc(o.customer_name)||'—'}</td>
+    <td dir="ltr" style="font-size:11px">${esc(o.phone)||'—'}</td>
+    <td style="max-width:160px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:11px">${esc(is)}</td>
     <td style="font-weight:700;color:var(--gold)">${(o.total||0).toLocaleString('fa-IR')}</td>
     <td><select onchange="updateStatus(${o.id},this.value)" style="background:none;border:none;outline:none;font-family:Vazirmatn,sans-serif;font-size:11px;cursor:pointer;color:inherit">
       ${['pending','preparing','ready','delivered','cancelled'].map(s=>`<option value="${s}" ${o.status===s?'selected':''} style="background:#1a1a1a">${SL[s]}</option>`).join('')}
@@ -978,15 +978,15 @@ function showOrder(id){
   document.getElementById('omTitle').textContent=`سفارش #${o.id}`;
   document.getElementById('omBody').innerHTML=`
     <div style="display:grid;gap:7px;margin-bottom:14px;font-size:12px">
-      <div style="display:flex;justify-content:space-between"><span style="color:var(--muted)">مشتری:</span><b>${o.customer_name}</b></div>
-      <div style="display:flex;justify-content:space-between"><span style="color:var(--muted)">تلفن:</span><b dir="ltr">${o.phone}</b></div>
-      <div style="display:flex;justify-content:space-between"><span style="color:var(--muted)">آدرس:</span><b>${o.address||'—'}</b></div>
-      <div style="display:flex;justify-content:space-between"><span style="color:var(--muted)">وضعیت:</span><b>${SL[o.status]||o.status}</b></div>
+      <div style="display:flex;justify-content:space-between"><span style="color:var(--muted)">مشتری:</span><b>${esc(o.customer_name)}</b></div>
+      <div style="display:flex;justify-content:space-between"><span style="color:var(--muted)">تلفن:</span><b dir="ltr">${esc(o.phone)}</b></div>
+      <div style="display:flex;justify-content:space-between"><span style="color:var(--muted)">آدرس:</span><b>${esc(o.address)||'—'}</b></div>
+      <div style="display:flex;justify-content:space-between"><span style="color:var(--muted)">وضعیت:</span><b>${SL[o.status]||esc(o.status)}</b></div>
       <div style="display:flex;justify-content:space-between"><span style="color:var(--muted)">زمان:</span><b>${new Date(o.created_at).toLocaleString('fa-IR')}</b></div>
     </div>
     <div style="border-top:1px solid var(--border);padding-top:12px">
       ${items.map(i=>`<div style="display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid rgba(255,255,255,.035);font-size:12px">
-        <span>${i.name} × ${i.qty||1}</span><span style="color:var(--gold);font-weight:700">${((i.price||0)*(i.qty||1)).toLocaleString('fa-IR')}T</span>
+        <span>${esc(i.name)} × ${i.qty||1}</span><span style="color:var(--gold);font-weight:700">${((i.price||0)*(i.qty||1)).toLocaleString('fa-IR')}T</span>
       </div>`).join('')}
       <div style="display:flex;justify-content:space-between;padding-top:11px;font-size:14px;font-weight:900">
         <span>جمع کل:</span><span style="color:var(--gold)">${(o.total||0).toLocaleString('fa-IR')} تومان</span>
@@ -1013,12 +1013,12 @@ function renderMenu(){
   const g=document.getElementById('menuGrid');
   if(!menuItems.length){g.innerHTML='<div class="empty" style="grid-column:1/-1"><big>📭</big><p>آیتمی وجود ندارد</p></div>';return;}
   g.innerHTML=menuItems.map(m=>`<div class="mic">
-    ${m.image_url?`<img src="${m.image_url}" alt="${m.name}" style="width:100%;height:90px;object-fit:cover;border-radius:8px;margin-bottom:8px" onerror="this.style.display='none'">`:
-    `<div style="width:100%;height:90px;background:rgba(255,255,255,.03);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:32px;margin-bottom:8px">${m.emoji||'🍔'}</div>`}
-    <div class="mic-top"><div class="mic-em">${m.emoji||'🍔'}</div>
-      <div><div class="mic-nm">${m.name}</div><div class="mic-pr">${(m.price||0).toLocaleString('fa-IR')} T</div></div>
+    ${m.image_url?`<img src="${esc(m.image_url)}" alt="${esc(m.name)}" style="width:100%;height:90px;object-fit:cover;border-radius:8px;margin-bottom:8px" onerror="this.style.display='none'">`:
+    `<div style="width:100%;height:90px;background:rgba(255,255,255,.03);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:32px;margin-bottom:8px">${esc(m.emoji)||'🍔'}</div>`}
+    <div class="mic-top"><div class="mic-em">${esc(m.emoji)||'🍔'}</div>
+      <div><div class="mic-nm">${esc(m.name)}</div><div class="mic-pr">${(m.price||0).toLocaleString('fa-IR')} T</div></div>
     </div>
-    <div style="font-size:10px;color:var(--muted);margin-bottom:7px">برچسب: <span style="color:var(--gold)">${m.tag||'—'}</span></div>
+    <div style="font-size:10px;color:var(--muted);margin-bottom:7px">برچسب: <span style="color:var(--gold)">${esc(m.tag)||'—'}</span></div>
     <div class="mic-ft">
       <button class="av ${m.available?'on':'off'}" onclick="toggleAvail(${m.id})">
         <div class="av-dot"></div>${m.available?'موجود':'ناموجود'}
@@ -1237,9 +1237,9 @@ function renderCustomers(){
   const tb=document.getElementById('custTb');
   tb.innerHTML=custs.map(c=>`<tr>
     <td><div style="display:flex;align-items:center;gap:7px">
-      <div style="width:27px;height:27px;border-radius:50%;background:rgba(245,197,24,.12);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:var(--gold)">${(c.name||'؟')[0]}</div>${c.name||'ناشناس'}</div></td>
-    <td dir="ltr" style="font-size:11px">${c.phone||'—'}</td>
-    <td style="max-width:130px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:11px">${c.address||'—'}</td>
+      <div style="width:27px;height:27px;border-radius:50%;background:rgba(245,197,24,.12);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:var(--gold)">${esc((c.name||'؟')[0])}</div>${esc(c.name)||'ناشناس'}</div></td>
+    <td dir="ltr" style="font-size:11px">${esc(c.phone)||'—'}</td>
+    <td style="max-width:130px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:11px">${esc(c.address)||'—'}</td>
     <td style="text-align:center">${c.cnt}</td>
     <td style="color:var(--gold);font-weight:700">${c.total.toLocaleString('fa-IR')}T</td>
     <td style="color:var(--muted);font-size:11px">${ft(c.last)}</td>
@@ -1274,7 +1274,7 @@ function renderReports(){
   const mx=top[0]?.[1]||1;
   document.getElementById('rTop').innerHTML=top.map(([n,c],i)=>`<div class="pi">
     <div class="pi-rank ${i===0?'top':''}">${i+1}</div>
-    <div class="pi-name">${n}</div><div class="pi-cnt">${c}</div>
+    <div class="pi-name">${esc(n)}</div><div class="pi-cnt">${c}</div>
     <div class="pi-bar" style="width:90px"><div class="pi-fill" style="width:${(c/mx*100).toFixed(0)}%"></div></div>
   </div>`).join('');
 }
@@ -1290,13 +1290,13 @@ async function loadMessages(){
     <div class="msg-dot" id="md${i}"></div>
     <div style="flex:1">
       <div style="display:flex;justify-content:space-between">
-        <div class="msg-title">${m.customer_name||'ناشناس'}</div>
+        <div class="msg-title">${esc(m.customer_name)||'ناشناس'}</div>
         <div class="msg-time">${ft(m.created_at)}</div>
       </div>
-      ${m.phone?`<div style="font-size:10px;color:var(--gold);margin-bottom:2px" dir="ltr">${m.phone}</div>`:''}
-      <div class="msg-body">${m.message||''}</div>
+      ${m.phone?`<div style="font-size:10px;color:var(--gold);margin-bottom:2px" dir="ltr">${esc(m.phone)}</div>`:''}
+      <div class="msg-body">${esc(m.message)||''}</div>
       <div style="margin-top:7px;display:flex;gap:5px">
-        ${m.phone?`<button class="ca" onclick="window.open('tel:${m.phone}')">📞 تماس</button>`:''}
+        ${m.phone?`<button class="ca" onclick="window.open('tel:${esc(m.phone)}')">📞 تماس</button>`:''}
         <button class="ca" onclick="markRead(${i})">✓ خوانده شد</button>
       </div>
     </div>
