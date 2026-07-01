@@ -376,6 +376,23 @@ footer{background:var(--dark2);border-top:1px solid var(--border);padding:60px 5
 .cart-total-val{font-size:20px;font-weight:900;color:var(--gold)}
 .order-form{display:none}
 .order-form.show{display:block}
+.dm-select{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px}
+.dm-opt{
+  background:rgba(255,255,255,.05);border:1.5px solid var(--border);
+  border-radius:9px;padding:10px 8px;text-align:center;cursor:pointer;
+  transition:all .2s;user-select:none;
+}
+.dm-opt:hover{background:rgba(255,255,255,.08)}
+.dm-opt.active{background:rgba(245,197,24,.12);border-color:var(--gold)}
+.dm-opt-icon{font-size:20px;margin-bottom:4px}
+.dm-opt-label{font-size:11.5px;font-weight:700;color:#fff}
+.dm-opt-sub{font-size:9.5px;color:var(--muted);margin-top:2px}
+.pickup-note{
+  background:rgba(59,130,246,.08);border:1px solid rgba(59,130,246,.2);
+  border-radius:8px;padding:9px 12px;font-size:11px;color:#93c5fd;
+  margin-bottom:10px;line-height:1.7;display:none;
+}
+.pickup-note.show{display:block}
 .o-input{
   width:100%;padding:10px 13px;
   background:rgba(255,255,255,.06);border:1.5px solid var(--border);
@@ -840,14 +857,27 @@ textarea.form-input{height:90px;resize:none}
     <div class="db-status"><span class="db-dot" id="dbDot"></span><span id="dbStatusText">بررسی اتصال...</span></div>
     <div class="cart-total-row"><span class="cart-total-label">جمع کل:</span><span class="cart-total-val" id="cartTotal">۰ T</span></div>
     <div class="order-form" id="orderForm">
+      <div class="dm-select">
+        <div class="dm-opt active" id="dmPickup" onclick="setDeliveryMethod('pickup')">
+          <div class="dm-opt-icon">🏪</div>
+          <div class="dm-opt-label">تحویل از مغازه</div>
+          <div class="dm-opt-sub">مراجعه حضوری</div>
+        </div>
+        <div class="dm-opt" id="dmCourier" onclick="setDeliveryMethod('courier')">
+          <div class="dm-opt-icon">🛵</div>
+          <div class="dm-opt-label">ارسال با پیک</div>
+          <div class="dm-opt-sub">درب منزل</div>
+        </div>
+      </div>
+      <div class="pickup-note" id="pickupNote">📍 آدرس مغازه: ارومیه، پل قوین — سفارش رو آماده می‌کنیم و خودتون تشریف میارید ببرید.</div>
       <input class="o-input" type="text" id="orderName" placeholder="نام شما *">
       <div class="err-msg" id="nameErr">نام را وارد کنید</div>
       <input class="o-input" type="tel" id="orderPhone" placeholder="شماره موبایل * مثلاً ۰۹۱۲..." dir="ltr" style="text-align:right">
       <div class="err-msg" id="phoneErr">شماره معتبر وارد کنید (۱۱ رقم با ۰)</div>
       <input class="o-input" type="text" id="orderAddress" placeholder="آدرس تحویل * (الزامی)">
       <div class="err-msg" id="addressErr">آدرس تحویل الزامی است</div>
-      <p class="order-note">⚡ سفارش ثبت و با شما تماس گرفته می‌شه</p>
-      <button class="cart-submit-btn" onclick="submitOrder()" id="submitBtn">ثبت سفارش 🚀</button>
+      <p class="order-note">⚡ بعد از ثبت سفارش به درگاه پرداخت آنلاین منتقل می‌شید</p>
+      <button class="cart-submit-btn" onclick="submitOrder()" id="submitBtn">ثبت و پرداخت سفارش 🚀</button>
     </div>
     <button class="checkout-btn-cart" id="checkoutBtn" onclick="showOrderForm()" style="display:none">ادامه و ثبت اطلاعات →</button>
   </div>
@@ -1010,6 +1040,24 @@ function closeCart(){
 }
 function showOrderForm(){document.getElementById('orderForm').classList.add('show');document.getElementById('checkoutBtn').style.display='none'}
 
+/* ══ DELIVERY METHOD ══ */
+let deliveryMethod='pickup';
+function setDeliveryMethod(method){
+  deliveryMethod=method;
+  document.getElementById('dmPickup').classList.toggle('active',method==='pickup');
+  document.getElementById('dmCourier').classList.toggle('active',method==='courier');
+  const addrInput=document.getElementById('orderAddress');
+  const pickupNote=document.getElementById('pickupNote');
+  if(method==='pickup'){
+    addrInput.style.display='none';
+    document.getElementById('addressErr').classList.remove('show');
+    pickupNote.classList.add('show');
+  }else{
+    addrInput.style.display='';
+    pickupNote.classList.remove('show');
+  }
+}
+
 /* ══ VALIDATION ══ */
 function clearErrs(){
   ['orderName','orderPhone','orderAddress'].forEach(id=>{document.getElementById(id).classList.remove('error')});
@@ -1027,29 +1075,37 @@ async function submitOrder(){
   let err=false;
   if(!name){showErr('orderName','nameErr');err=true}
   if(!validPhone(phone)){showErr('orderPhone','phoneErr');err=true}
-  if(!address){showErr('orderAddress','addressErr');err=true}
+  if(deliveryMethod==='courier' && !address){showErr('orderAddress','addressErr');err=true}
   if(err){showToast('❌ موارد مشخص‌شده را تکمیل کنید','error');return}
   const btn=document.getElementById('submitBtn');
-  btn.disabled=true;btn.textContent='در حال ارسال...';
+  btn.disabled=true;btn.textContent='در حال ثبت سفارش...';
   const orderData={
-    customer_name:name,phone:phone.replace(/[\s\-]/g,''),address,
+    customer_name:name,phone:phone.replace(/[\s\-]/g,''),
+    address:deliveryMethod==='courier'?address:'',
+    delivery_method:deliveryMethod,
     items:JSON.stringify(Object.entries(cart).map(([id,qty])=>{const i=MENU.find(m=>m.id==id);return{id,name:i?.name,qty,price:i?.price,total:i?.price*qty}})),
     total:getTotal(),status:'pending',created_at:new Date().toISOString()
   };
   try{
     const r=await apiPost('/orders',orderData);
-    if(r.ok||r.status===201){
-      showToast('🎉 سفارش ثبت شد! به زودی تماس می‌گیریم');
-      cart={};updateCartUI();closeCart();btn.textContent='ثبت شد ✓';
-      // قطع پولینگ احتمالی قبل از ردیابی جدید
-      if(trackPollInterval){clearInterval(trackPollInterval);trackPollInterval=null;}
-      setTimeout(()=>{
-        const t=document.getElementById('trackPhone');
-        if(t){t.value=phone;document.getElementById('track').scrollIntoView({behavior:'smooth',block:'start'});trackOrder();}
-      },800);
+    const data=await r.json().catch(()=>null);
+    if(!(r.ok||r.status===201)||!data?.order_id){
+      throw new Error(data?.error||'order create failed');
     }
-    else throw new Error();
-  }catch(e){showToast('❌ خطا در ثبت سفارش','error');window.reportClientError&&window.reportClientError('submitOrder failed: '+e.message,{stack:e.stack});btn.disabled=false;btn.textContent='ثبت سفارش 🚀'}
+    // سفارش ساخته شد — حالا برو مرحله پرداخت آنلاین (زرین‌پال)
+    btn.textContent='در حال اتصال به درگاه پرداخت...';
+    const pr=await apiPost('/payment/request',{order_id:data.order_id});
+    const pd=await pr.json().catch(()=>null);
+    if(!(pr.ok)||!pd?.payment_url){
+      throw new Error(pd?.error||'payment request failed');
+    }
+    // ریدایرکت به درگاه زرین‌پال
+    window.location.href=pd.payment_url;
+  }catch(e){
+    showToast('❌ '+(e.message&&e.message!=='order create failed'?e.message:'خطا در ثبت سفارش یا اتصال به درگاه پرداخت'),'error');
+    window.reportClientError&&window.reportClientError('submitOrder failed: '+e.message,{stack:e.stack});
+    btn.disabled=false;btn.textContent='ثبت و پرداخت سفارش 🚀';
+  }
 }
 
 /* ══ CONTACT ══ */
@@ -1278,6 +1334,32 @@ document.getElementById('trackPhone').addEventListener('keydown',e=>{if(e.key===
   });
 
   window.reportClientError = reportClientError;
+})();
+
+/* ══ حالت پیش‌فرض روش تحویل (آدرس رو مخفی کن چون پیش‌فرض حضوریه) ══ */
+setDeliveryMethod('pickup');
+
+/* ══ بازگشت از درگاه پرداخت زرین‌پال ══ */
+(function(){
+  const params=new URLSearchParams(window.location.search);
+  const payment=params.get('payment');
+  const orderId=params.get('order');
+  if(!payment)return;
+  if(payment==='success'){
+    showToast('🎉 پرداخت با موفقیت انجام شد! سفارش شما تایید شد');
+    setTimeout(()=>{
+      const t=document.getElementById('trackPhone');
+      document.getElementById('track').scrollIntoView({behavior:'smooth',block:'start'});
+      if(t && orderId){
+        // شماره رو نداریم، فقط کاربر رو به بخش پیگیری می‌بریم تا خودش شماره‌شو بزنه
+      }
+    },600);
+  }else if(payment==='failed'){
+    showToast('❌ پرداخت ناموفق بود یا لغو شد. دوباره امتحان کنید','error');
+  }
+  // پاک کردن پارامترها از URL بدون رفرش صفحه
+  const cleanUrl=window.location.pathname+window.location.hash;
+  window.history.replaceState({},'',cleanUrl);
 })();
 </script>
 </body>
