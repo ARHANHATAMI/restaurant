@@ -575,6 +575,16 @@ textarea.fi{resize:none;height:65px}
         <div class="sr"><div><div class="sr-lbl">قبول سفارش آنلاین</div></div><label class="tog"><input type="checkbox" checked><span class="tog-sl"></span></label></div>
         <div class="sr"><div><div class="sr-lbl">حداقل مبلغ (تومان)</div></div><input class="fi" style="width:130px" type="number" value="50000"></div>
       </div>
+      <div class="ss"><div class="ss-title">📱 تست پیامک ملی‌پیامک</div>
+        <div style="padding:14px 16px">
+          <div style="font-size:11px;color:var(--muted);margin-bottom:10px">شماره موبایل خودتون رو بزنید و تست کنید — جواب واقعی ملی‌پیامک همین‌جا نشون داده می‌شه.</div>
+          <div style="display:flex;gap:8px;margin-bottom:8px">
+            <input class="fi" id="testSmsPhone" type="tel" placeholder="09120000000" dir="ltr" style="text-align:right;flex:1">
+            <button class="fs" id="testSmsBtn" onclick="testSms()" style="white-space:nowrap">📤 ارسال تست</button>
+          </div>
+          <div id="testSmsResult" style="font-size:11px;padding:10px 12px;border-radius:8px;display:none;white-space:pre-wrap;line-height:1.8"></div>
+        </div>
+      </div>
       <button class="fs" onclick="toast('✅ تنظیمات ذخیره شد','ok')">💾 ذخیره تغییرات</button>
     </div>
 
@@ -1512,6 +1522,37 @@ function toast(msg,type=''){
   t.textContent=msg;t.className='toast '+(type||'');
   t.classList.add('show');clearTimeout(t._t);
   t._t=setTimeout(()=>t.classList.remove('show'),3000);
+}
+
+// TEST SMS
+async function testSms(){
+  const phone=document.getElementById('testSmsPhone').value.trim().replace(/[\s\-]/g,'');
+  const resEl=document.getElementById('testSmsResult');
+  const btn=document.getElementById('testSmsBtn');
+  if(!/^09\d{9}$/.test(phone)){toast('❌ شماره معتبر وارد کنید','err');return;}
+  btn.disabled=true;btn.textContent='در حال ارسال...';
+  resEl.style.display='none';
+  try{
+    const r=await adminFetch('/admin/test-sms',{method:'POST',body:JSON.stringify({phone})});
+    const data=await r.json().catch(()=>null);
+    resEl.style.display='block';
+    if(data?.success){
+      resEl.style.background='rgba(34,197,94,.08)';resEl.style.border='1px solid rgba(34,197,94,.25)';resEl.style.color='#4ade80';
+      resEl.textContent='✅ پیامک با موفقیت ارسال شد\nجواب ملی‌پیامک: '+JSON.stringify(data.mellipayamak_response);
+      toast('✅ پیامک تست ارسال شد','ok');
+    }else{
+      resEl.style.background='rgba(230,57,70,.08)';resEl.style.border='1px solid rgba(230,57,70,.25)';resEl.style.color='#f87171';
+      resEl.textContent='❌ ارسال ناموفق بود\n'+(data?.error?('خطا: '+data.error):'')+'\nجواب کامل: '+JSON.stringify(data?.mellipayamak_response||data);
+      toast('❌ ارسال پیامک ناموفق بود','err');
+    }
+  }catch(e){
+    resEl.style.display='block';
+    resEl.style.background='rgba(230,57,70,.08)';resEl.style.border='1px solid rgba(230,57,70,.25)';resEl.style.color='#f87171';
+    resEl.textContent='❌ خطا در اتصال: '+e.message;
+    toast('❌ خطا در اتصال','err');
+  }finally{
+    btn.disabled=false;btn.textContent='📤 ارسال تست';
+  }
 }
 
 // ══════════════════════════════════════════
