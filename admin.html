@@ -4,7 +4,18 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>پنل ادمین | عمو رسول</title>
-<link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+<!-- فونت Vazirmatn به‌صورت self-host — دیگه به fonts.googleapis.com وصل نمی‌شیم.
+     فایل fonts/Vazirmatn-Variable.woff2 رو کنار همین HTML آپلود کن. -->
+<style>
+@font-face{
+  font-family:'Vazirmatn';
+  src:url('fonts/Vazirmatn-Variable.woff2') format('woff2 supports variations'),
+      url('fonts/Vazirmatn-Variable.woff2') format('woff2-variations');
+  font-weight:100 900;
+  font-style:normal;
+  font-display:swap;
+}
+</style>
 <style>
 :root{
   --gold:#f5c518;--gold2:#ffd84d;
@@ -633,8 +644,8 @@ textarea.fi{resize:none;height:65px}
 <div class="toast" id="toastEl"></div>
 
 <script>
-const SUPABASE_URL='https://bqpgdvwfvnevoagzdvai.supabase.co';
-const SUPABASE_KEY='sb_publishable_4Rvuz7Fgzib_guZKnPplAA_uSpIGAYv';
+// دیگه هیچ لینک مستقیمی به supabase.co تو مرورگر نیست — همه‌چی (لاگین،
+// رفرش توکن، خروج، آپلود عکس) از طریق همین Worker رد می‌شه.
 // همون Worker اول — یه Worker برای همه
 const ADMIN_API='https://api.arhanhatami.ir';
 
@@ -690,9 +701,10 @@ async function checkSession(){
 
 async function refreshSession(refreshToken){
   try{
-    const r=await fetch(`${SUPABASE_URL}/auth/v1/token?grant_type=refresh_token`,{
+    // از طریق Worker خودمون — نه مستقیم supabase.co (که از ایران ممکنه قطع باشه)
+    const r=await fetch(`${ADMIN_API}/auth/refresh`,{
       method:'POST',
-      headers:{'apikey':SUPABASE_KEY,'Content-Type':'application/json'},
+      headers:{'Content-Type':'application/json'},
       body:JSON.stringify({refresh_token:refreshToken})
     });
     if(!r.ok)return false;
@@ -742,9 +754,10 @@ async function doLogin(){
   document.getElementById('loginPass').classList.remove('err');
 
   try{
-    const r=await fetch(`${SUPABASE_URL}/auth/v1/token?grant_type=password`,{
+    // از طریق Worker خودمون — نه مستقیم supabase.co (که از ایران ممکنه قطع باشه)
+    const r=await fetch(`${ADMIN_API}/auth/login`,{
       method:'POST',
-      headers:{'apikey':SUPABASE_KEY,'Content-Type':'application/json'},
+      headers:{'Content-Type':'application/json'},
       body:JSON.stringify({email,password:pass})
     });
     const data=await r.json();
@@ -772,9 +785,10 @@ async function doLogout(){
   if(!confirm('از پنل خارج شوید؟'))return;
   try{
     if(currentSession?.access_token){
-      await fetch(`${SUPABASE_URL}/auth/v1/logout`,{
+      // از طریق Worker خودمون — نه مستقیم supabase.co
+      await fetch(`${ADMIN_API}/auth/logout`,{
         method:'POST',
-        headers:{'apikey':SUPABASE_KEY,'Authorization':'Bearer '+currentSession.access_token}
+        headers:{'Authorization':'Bearer '+currentSession.access_token}
       });
     }
   }catch{}
@@ -1062,7 +1076,7 @@ function renderMenu(){
   const g=document.getElementById('menuGrid');
   if(!menuItems.length){g.innerHTML='<div class="empty" style="grid-column:1/-1"><big>📭</big><p>آیتمی وجود ندارد</p></div>';return;}
   g.innerHTML=menuItems.map(m=>`<div class="mic">
-    ${m.image_url?`<img src="${esc(m.image_url)}" alt="${esc(m.name)}" style="width:100%;height:90px;object-fit:cover;border-radius:8px;margin-bottom:8px" onerror="this.style.display='none'">`:
+    ${m.image_url?`<img src="${esc(toProxiedImg(m.image_url))}" alt="${esc(m.name)}" style="width:100%;height:90px;object-fit:cover;border-radius:8px;margin-bottom:8px" onerror="this.style.display='none'">`:
     `<div style="width:100%;height:90px;background:rgba(255,255,255,.03);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:32px;margin-bottom:8px">${esc(m.emoji)||'🍔'}</div>`}
     <div class="mic-top"><div class="mic-em">${esc(m.emoji)||'🍔'}</div>
       <div><div class="mic-nm">${esc(m.name)}</div><div class="mic-pr">${(m.price||0).toLocaleString('fa-IR')} T</div></div>
@@ -1096,9 +1110,9 @@ function editMenu(id){
   document.getElementById('miPrice').value=m.price;
   document.getElementById('miEmoji').value=m.emoji||'';
   document.getElementById('miTag').value=m.tag||'';
-  document.getElementById('miImageUrl').value=m.image_url||'';
+  document.getElementById('miImageUrl').value=toProxiedImg(m.image_url)||'';
   // نمایش عکس فعلی
-  if(m.image_url) setPreviewImage(m.image_url);
+  if(m.image_url) setPreviewImage(toProxiedImg(m.image_url));
   else clearImage();
   document.getElementById('miModal').classList.add('open');
 }
@@ -1164,25 +1178,19 @@ async function uploadToStorage(file){
   btn.disabled=true;btn.textContent='در حال آپلود...';
   prog.style.display='block';bar.style.width='20%';
   try{
-    const ext=file.name.split('.').pop().toLowerCase();
-    const fileName='menu/'+Date.now()+'_'+Math.random().toString(36).slice(2)+'.'+ext;
-    const token=currentSession?.access_token||'';
     bar.style.width='50%';
-    const r=await fetch(SUPABASE_URL+'/storage/v1/object/images/'+fileName,{
+    // فایل مستقیم به Worker خودمون می‌ره — نه مستقیم به supabase.co
+    // (Worker سرور-به-سرور آپلود می‌کنه و لینک پروکسی‌شده برمی‌گردونه)
+    const r=await adminFetch('/admin/upload-image',{
       method:'POST',
-      headers:{
-        'apikey':SUPABASE_KEY,
-        'Authorization':'Bearer '+token,
-        'Content-Type':file.type,
-        'Cache-Control':'3600',
-      },
+      headers:{'Content-Type':file.type},
       body:file,
     });
     bar.style.width='90%';
-    if(!r.ok){const err=await r.json();throw new Error(err.error||'upload failed');}
-    const publicUrl=SUPABASE_URL+'/storage/v1/object/public/images/'+fileName;
-    document.getElementById('miImageUrl').value=publicUrl;
-    setPreviewImage(publicUrl);
+    const data=await r.json().catch(()=>null);
+    if(!r.ok||!data?.success) throw new Error(data?.error||'upload failed');
+    document.getElementById('miImageUrl').value=data.url;
+    setPreviewImage(data.url);
     bar.style.width='100%';
     toast('✅ عکس آپلود شد','ok');
   }catch(e){
@@ -1498,6 +1506,14 @@ function renderMonitoring(){
 }
 
 // HELPERS
+// آیتم‌های قدیمی ممکنه لینک مستقیم supabase.co ذخیره کرده باشن — تبدیلش می‌کنیم
+// به لینک پروکسی‌شده خودمون تا بدون VPN هم لود بشه
+function toProxiedImg(u){
+  if(!u) return u;
+  const m=u.match(/supabase\.co\/storage\/v1\/object\/public\/images\/(.+)$/);
+  if(m) return `${ADMIN_API}/img/${m[1]}`;
+  return u;
+}
 function esc(str){const d=document.createElement('div');d.textContent=String(str==null?'':str);return d.innerHTML;}
 function parseItems(items){
   if(!items)return[];
