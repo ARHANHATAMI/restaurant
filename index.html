@@ -5,11 +5,21 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>عمو رسول | فست فود ارومیه</title>
 <!-- preconnect برای سرعت بارگذاری -->
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="preconnect" href="https://images.unsplash.com">
+<link rel="preconnect" href="https://api.arhanhatami.ir">
 <link rel="dns-prefetch" href="https://api.arhanhatami.ir">
-<link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;700;800;900&display=swap" rel="stylesheet">
+<!-- فونت Vazirmatn به‌صورت self-host — دیگه به fonts.googleapis.com/fonts.gstatic.com
+     وصل نمی‌شیم (که از ایران بدون VPN معمولاً کند/غیرقابل‌دسترسه و رندر صفحه رو معطل می‌کرد).
+     فایل fonts/Vazirmatn-Variable.woff2 رو کنار همین HTML آپلود کن. -->
+<style>
+@font-face{
+  font-family:'Vazirmatn';
+  src:url('fonts/Vazirmatn-Variable.woff2') format('woff2 supports variations'),
+      url('fonts/Vazirmatn-Variable.woff2') format('woff2-variations');
+  font-weight:100 900;
+  font-style:normal;
+  font-display:swap;
+}
+</style>
 <style>
 :root{
   --gold:#f5c518;--gold2:#ffd84d;--gold-dark:#e6b800;
@@ -617,16 +627,16 @@ textarea.form-input{height:90px;resize:none}
     </div>
     <div class="hero-social-proof">
       <div class="avatar-stack">
-        <img src="https://i.pravatar.cc/32?img=1" alt="">
-        <img src="https://i.pravatar.cc/32?img=2" alt="">
-        <img src="https://i.pravatar.cc/32?img=3" alt="">
+        <img src="https://api.arhanhatami.ir/img-ext?url=https%3A%2F%2Fi.pravatar.cc%2F32%3Fimg%3D1" alt="">
+        <img src="https://api.arhanhatami.ir/img-ext?url=https%3A%2F%2Fi.pravatar.cc%2F32%3Fimg%3D2" alt="">
+        <img src="https://api.arhanhatami.ir/img-ext?url=https%3A%2F%2Fi.pravatar.cc%2F32%3Fimg%3D3" alt="">
       </div>
       <div class="social-text"><strong>+۵ هزار</strong> مشتری راضی</div>
     </div>
   </div>
   <div class="hero-img-wrap">
     <img class="hero-img"
-      src="https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=800&q=80&auto=format&fit=crop&fm=webp"
+      src="https://api.arhanhatami.ir/img-ext?url=https%3A%2F%2Fimages.unsplash.com%2Fphoto-1568901346375-23c9450c58cd%3Fw%3D800%26q%3D80%26auto%3Dformat%26fit%3Dcrop%26fm%3Dwebp"
       alt="برگر عمو رسول" loading="eager" fetchpriority="high" width="800" height="520">
   </div>
 </section>
@@ -682,7 +692,7 @@ textarea.form-input{height:90px;resize:none}
         <div class="deal-items">۱ برگر + ۱ سیب‌زمینی<br>+ ۱ نوشیدنی</div>
         <button class="deal-price-btn" onclick="showToast('🎉 کمبو برگر به سبد اضافه شد!')">۱۸۰ هزار تومان →</button>
       </div>
-      <img class="deal-img" src="https://images.unsplash.com/photo-1553979459-d2229ba7433a?w=320&q=80&auto=format&fit=crop" alt="Burger Combo">
+      <img class="deal-img" src="https://api.arhanhatami.ir/img-ext?url=https%3A%2F%2Fimages.unsplash.com%2Fphoto-1553979459-d2229ba7433a%3Fw%3D320%26q%3D80%26auto%3Dformat%26fit%3Dcrop" alt="Burger Combo">
     </div>
     <div class="deal-card red">
       <div class="deal-info">
@@ -690,7 +700,7 @@ textarea.form-input{height:90px;resize:none}
         <div class="deal-items">۲ برگر + ۲ سیب‌زمینی<br>+ ۲ نوشیدنی</div>
         <button class="deal-price-btn" onclick="showToast('🎉 کمبو خانوادگی به سبد اضافه شد!')">۳۲۰ هزار تومان →</button>
       </div>
-      <img class="deal-img" src="https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=320&q=80&auto=format&fit=crop" alt="Family Combo">
+      <img class="deal-img" src="https://api.arhanhatami.ir/img-ext?url=https%3A%2F%2Fimages.unsplash.com%2Fphoto-1568901346375-23c9450c58cd%3Fw%3D320%26q%3D80%26auto%3Dformat%26fit%3Dcrop" alt="Family Combo">
     </div>
   </div>
 </div>
@@ -911,6 +921,23 @@ const TAG_MAP = {'پرفروش‌ترین':'tag-best','ویژه عمو':'tag-vip
 function apiPost(path, body){ return fetch(API+path,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)}); }
 function apiGet(path){ return fetch(API+path); }
 
+/* ══ IMAGE PROXY HELPERS ══ */
+// عکس‌ها رو از Worker رد می‌کنیم تا مرورگر کاربر مستقیم به supabase.co یا
+// unsplash.com وصل نشه (که از ایران معمولاً بدون VPN کند/قطعه)
+const PROXIED_IMG_HOSTS = ['images.unsplash.com', 'i.pravatar.cc'];
+function proxyImg(u){
+  if(!u) return u;
+  // ۱) لینک مستقیم Supabase Storage → از /img/ Worker رد کن
+  const m = u.match(/supabase\.co\/storage\/v1\/object\/public\/images\/(.+)$/);
+  if(m) return `${API}/img/${m[1]}`;
+  // ۲) لینک از دامنه‌های خارجی مجاز (Unsplash و...) → از /img-ext رد کن
+  try{
+    const host = new URL(u, location.href).hostname;
+    if(PROXIED_IMG_HOSTS.includes(host)) return `${API}/img-ext?url=${encodeURIComponent(u)}`;
+  }catch{}
+  return u;
+}
+
 /* ══ MENU ══ */
 let MENU = [];
 async function loadMenu(){
@@ -938,7 +965,7 @@ function renderMenu(items){
   const g = document.getElementById('menuGrid');
   g.innerHTML = items.map(item=>{
     const m = MENU_META[item.name]||{};
-    const img = item.image_url||m.img||FALLBACK;
+    const img = proxyImg(item.image_url||m.img||FALLBACK);
     const tagCls = TAG_MAP[item.tag]||m.tag||'tag-new';
     const rating = (m.r||'★★★★☆') + ' ' + (m.rv||'۴.۵');
     const rCount = m.rc||'(۱۰۰)';
@@ -946,7 +973,7 @@ function renderMenu(items){
     return `
     <div class="menu-card reveal">
       <div class="menu-card-img-wrap">
-        <img class="menu-card-img" src="${img}" alt="${item.name}" loading="lazy" onerror="this.src='${FALLBACK}'">
+        <img class="menu-card-img" src="${img}" alt="${item.name}" loading="lazy" onerror="this.src='${proxyImg(FALLBACK)}'">
         <span class="card-tag ${item.available?tagCls:'tag-na'}">${item.available?(item.tag||''):'ناموجود'}</span>
       </div>
       <div class="menu-card-body">
