@@ -5,21 +5,11 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>عمو رسول | فست فود ارومیه</title>
 <!-- preconnect برای سرعت بارگذاری -->
-<link rel="preconnect" href="https://api.arhanhatami.ir">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preconnect" href="https://images.unsplash.com">
 <link rel="dns-prefetch" href="https://api.arhanhatami.ir">
-<!-- فونت Vazirmatn به‌صورت self-host — دیگه به fonts.googleapis.com/fonts.gstatic.com
-     وصل نمی‌شیم (که از ایران بدون VPN معمولاً کند/غیرقابل‌دسترسه و رندر صفحه رو معطل می‌کرد).
-     فایل fonts/Vazirmatn-Variable.woff2 رو کنار همین HTML آپلود کن. -->
-<style>
-@font-face{
-  font-family:'Vazirmatn';
-  src:url('fonts/Vazirmatn-Variable.woff2') format('woff2 supports variations'),
-      url('fonts/Vazirmatn-Variable.woff2') format('woff2-variations');
-  font-weight:100 900;
-  font-style:normal;
-  font-display:swap;
-}
-</style>
+<link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;700;800;900&display=swap" rel="stylesheet">
 <style>
 :root{
   --gold:#f5c518;--gold2:#ffd84d;--gold-dark:#e6b800;
@@ -627,16 +617,16 @@ textarea.form-input{height:90px;resize:none}
     </div>
     <div class="hero-social-proof">
       <div class="avatar-stack">
-        <img src="https://api.arhanhatami.ir/img-ext?url=https%3A%2F%2Fi.pravatar.cc%2F32%3Fimg%3D1" alt="">
-        <img src="https://api.arhanhatami.ir/img-ext?url=https%3A%2F%2Fi.pravatar.cc%2F32%3Fimg%3D2" alt="">
-        <img src="https://api.arhanhatami.ir/img-ext?url=https%3A%2F%2Fi.pravatar.cc%2F32%3Fimg%3D3" alt="">
+        <img src="https://i.pravatar.cc/32?img=1" alt="">
+        <img src="https://i.pravatar.cc/32?img=2" alt="">
+        <img src="https://i.pravatar.cc/32?img=3" alt="">
       </div>
       <div class="social-text"><strong>+۵ هزار</strong> مشتری راضی</div>
     </div>
   </div>
   <div class="hero-img-wrap">
     <img class="hero-img"
-      src="https://api.arhanhatami.ir/img-ext?url=https%3A%2F%2Fimages.unsplash.com%2Fphoto-1568901346375-23c9450c58cd%3Fw%3D800%26q%3D80%26auto%3Dformat%26fit%3Dcrop%26fm%3Dwebp"
+      src="https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=800&q=80&auto=format&fit=crop&fm=webp"
       alt="برگر عمو رسول" loading="eager" fetchpriority="high" width="800" height="520">
   </div>
 </section>
@@ -692,7 +682,7 @@ textarea.form-input{height:90px;resize:none}
         <div class="deal-items">۱ برگر + ۱ سیب‌زمینی<br>+ ۱ نوشیدنی</div>
         <button class="deal-price-btn" onclick="showToast('🎉 کمبو برگر به سبد اضافه شد!')">۱۸۰ هزار تومان →</button>
       </div>
-      <img class="deal-img" src="https://api.arhanhatami.ir/img-ext?url=https%3A%2F%2Fimages.unsplash.com%2Fphoto-1553979459-d2229ba7433a%3Fw%3D320%26q%3D80%26auto%3Dformat%26fit%3Dcrop" alt="Burger Combo">
+      <img class="deal-img" src="https://images.unsplash.com/photo-1553979459-d2229ba7433a?w=320&q=80&auto=format&fit=crop" alt="Burger Combo">
     </div>
     <div class="deal-card red">
       <div class="deal-info">
@@ -700,7 +690,7 @@ textarea.form-input{height:90px;resize:none}
         <div class="deal-items">۲ برگر + ۲ سیب‌زمینی<br>+ ۲ نوشیدنی</div>
         <button class="deal-price-btn" onclick="showToast('🎉 کمبو خانوادگی به سبد اضافه شد!')">۳۲۰ هزار تومان →</button>
       </div>
-      <img class="deal-img" src="https://api.arhanhatami.ir/img-ext?url=https%3A%2F%2Fimages.unsplash.com%2Fphoto-1568901346375-23c9450c58cd%3Fw%3D320%26q%3D80%26auto%3Dformat%26fit%3Dcrop" alt="Family Combo">
+      <img class="deal-img" src="https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=320&q=80&auto=format&fit=crop" alt="Family Combo">
     </div>
   </div>
 </div>
@@ -775,16 +765,6 @@ textarea.form-input{height:90px;resize:none}
     <div class="tracker-input-row">
       <input class="tracker-input" type="tel" id="trackPhone" placeholder="۰۹۱۲۰۰۰۰۰۰۰" dir="ltr" style="text-align:right" maxlength="11">
       <button class="tracker-btn" id="trackBtn" onclick="trackOrder()">پیگیری <span id="trackSpinner" style="display:none" class="tracker-spinner"></span></button>
-    </div>
-    <div class="tracker-otp-box" id="otpBox" style="display:none;margin-bottom:14px">
-      <div style="font-size:11px;color:var(--muted);margin-bottom:10px">
-        کد تایید ۶ رقمی برای <span id="otpPhoneDisplay" style="color:#fff;direction:ltr;display:inline-block"></span> ارسال شد
-      </div>
-      <div class="tracker-input-row">
-        <input class="tracker-input" type="tel" id="otpCode" placeholder="کد تایید" maxlength="6" dir="ltr" style="text-align:center;letter-spacing:4px">
-        <button class="tracker-btn" id="otpVerifyBtn" onclick="verifyOtp()">تایید</button>
-      </div>
-      <div style="font-size:10px;color:var(--muted);text-align:center" id="otpResend">ارسال دوباره کد تا <span id="otpTimer">60</span> ثانیه دیگر</div>
     </div>
     <div class="tracker-error" id="trackError"></div>
     <div class="tracker-result" id="trackResult">
@@ -894,10 +874,22 @@ textarea.form-input{height:90px;resize:none}
       <div class="err-msg" id="nameErr">نام را وارد کنید</div>
       <input class="o-input" type="tel" id="orderPhone" placeholder="شماره موبایل * مثلاً ۰۹۱۲..." dir="ltr" style="text-align:right">
       <div class="err-msg" id="phoneErr">شماره معتبر وارد کنید (۱۱ رقم با ۰)</div>
+
+      <!-- OTP VERIFICATION -->
+      <div id="otpSendWrap" style="margin-bottom:8px">
+        <button type="button" class="fc" id="otpSendBtn" onclick="requestOtp()" style="width:100%;text-align:center;margin-right:0">📲 دریافت کد تایید شماره</button>
+      </div>
+      <div style="display:none;gap:6px;margin-bottom:6px" id="otpRow">
+        <input class="o-input" type="text" id="otpCode" placeholder="کد تایید را وارد کنید" inputmode="numeric" maxlength="6" style="flex:1;margin-bottom:0">
+        <button type="button" class="fc" id="otpVerifyBtn" onclick="verifyOtp()" style="white-space:nowrap;margin-right:0">تایید</button>
+      </div>
+      <div class="err-msg" id="otpErr">کد نامعتبر است</div>
+      <div style="font-size:11px;color:#4ade80;margin-bottom:8px;display:none" id="otpVerifiedNote">✅ شماره موبایل تایید شد</div>
+
       <input class="o-input" type="text" id="orderAddress" placeholder="آدرس تحویل * (الزامی)">
       <div class="err-msg" id="addressErr">آدرس تحویل الزامی است</div>
-      <p class="order-note">✅ بعد از ثبت سفارش، از بخش «پیگیری سفارش» می‌تونید وضعیتش رو دنبال کنید</p>
-      <button class="cart-submit-btn" onclick="submitOrder()" id="submitBtn">ثبت سفارش 🚀</button>
+      <p class="order-note">⚡ بعد از ثبت سفارش به درگاه پرداخت آنلاین منتقل می‌شید</p>
+      <button class="cart-submit-btn" onclick="submitOrder()" id="submitBtn">ثبت و پرداخت سفارش 🚀</button>
     </div>
     <button class="checkout-btn-cart" id="checkoutBtn" onclick="showOrderForm()" style="display:none">ادامه و ثبت اطلاعات →</button>
   </div>
@@ -931,23 +923,6 @@ const TAG_MAP = {'پرفروش‌ترین':'tag-best','ویژه عمو':'tag-vip
 function apiPost(path, body){ return fetch(API+path,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)}); }
 function apiGet(path){ return fetch(API+path); }
 
-/* ══ IMAGE PROXY HELPERS ══ */
-// عکس‌ها رو از Worker رد می‌کنیم تا مرورگر کاربر مستقیم به supabase.co یا
-// unsplash.com وصل نشه (که از ایران معمولاً بدون VPN کند/قطعه)
-const PROXIED_IMG_HOSTS = ['images.unsplash.com', 'i.pravatar.cc'];
-function proxyImg(u){
-  if(!u) return u;
-  // ۱) لینک مستقیم Supabase Storage → از /img/ Worker رد کن
-  const m = u.match(/supabase\.co\/storage\/v1\/object\/public\/images\/(.+)$/);
-  if(m) return `${API}/img/${m[1]}`;
-  // ۲) لینک از دامنه‌های خارجی مجاز (Unsplash و...) → از /img-ext رد کن
-  try{
-    const host = new URL(u, location.href).hostname;
-    if(PROXIED_IMG_HOSTS.includes(host)) return `${API}/img-ext?url=${encodeURIComponent(u)}`;
-  }catch{}
-  return u;
-}
-
 /* ══ MENU ══ */
 let MENU = [];
 async function loadMenu(){
@@ -975,7 +950,7 @@ function renderMenu(items){
   const g = document.getElementById('menuGrid');
   g.innerHTML = items.map(item=>{
     const m = MENU_META[item.name]||{};
-    const img = proxyImg(item.image_url||m.img||FALLBACK);
+    const img = item.image_url||m.img||FALLBACK;
     const tagCls = TAG_MAP[item.tag]||m.tag||'tag-new';
     const rating = (m.r||'★★★★☆') + ' ' + (m.rv||'۴.۵');
     const rCount = m.rc||'(۱۰۰)';
@@ -983,7 +958,7 @@ function renderMenu(items){
     return `
     <div class="menu-card reveal">
       <div class="menu-card-img-wrap">
-        <img class="menu-card-img" src="${img}" alt="${item.name}" loading="lazy" onerror="this.src='${proxyImg(FALLBACK)}'">
+        <img class="menu-card-img" src="${img}" alt="${item.name}" loading="lazy" onerror="this.src='${FALLBACK}'">
         <span class="card-tag ${item.available?tagCls:'tag-na'}">${item.available?(item.tag||''):'ناموجود'}</span>
       </div>
       <div class="menu-card-body">
@@ -1103,6 +1078,66 @@ function clearErrs(){
 function validPhone(p){const c=p.replace(/[\s\-]/g,'');return /^09\d{9}$/.test(c)}
 function showErr(inputId,errId){document.getElementById(inputId).classList.add('error');document.getElementById(errId).classList.add('show')}
 
+/* ══ OTP VERIFICATION ══ */
+let otpVerified=false;
+let otpVerifiedPhone='';
+
+function resetOtpUI(){
+  otpVerified=false;otpVerifiedPhone='';
+  document.getElementById('otpRow').style.display='none';
+  document.getElementById('otpSendWrap').style.display='block';
+  document.getElementById('otpVerifiedNote').style.display='none';
+  document.getElementById('otpCode').value='';
+  document.getElementById('otpErr').classList.remove('show');
+  const btn=document.getElementById('otpSendBtn');btn.disabled=false;btn.textContent='📲 دریافت کد تایید شماره';
+}
+
+document.getElementById('orderPhone').addEventListener('input',()=>{
+  const cur=document.getElementById('orderPhone').value.trim().replace(/[\s\-]/g,'');
+  if(otpVerified && cur!==otpVerifiedPhone) resetOtpUI();
+});
+
+async function requestOtp(){
+  const phone=document.getElementById('orderPhone').value.trim().replace(/[\s\-]/g,'');
+  if(!validPhone(phone)){showErr('orderPhone','phoneErr');showToast('❌ ابتدا شماره معتبر وارد کنید','error');return}
+  const btn=document.getElementById('otpSendBtn');
+  btn.disabled=true;const orig=btn.textContent;btn.textContent='در حال ارسال...';
+  try{
+    const r=await apiPost('/otp/request',{phone});
+    const data=await r.json().catch(()=>null);
+    if(!r.ok||!data?.success) throw new Error(data?.error||'ارسال کد ناموفق بود');
+    document.getElementById('otpRow').style.display='flex';
+    document.getElementById('otpSendWrap').style.display='none';
+    showToast('✓ کد تایید برای شما پیامک شد');
+  }catch(e){
+    showToast('❌ '+e.message,'error');
+    btn.disabled=false;btn.textContent=orig;
+  }
+}
+
+async function verifyOtp(){
+  const phone=document.getElementById('orderPhone').value.trim().replace(/[\s\-]/g,'');
+  const code=document.getElementById('otpCode').value.trim();
+  const errEl=document.getElementById('otpErr');
+  errEl.classList.remove('show');
+  if(!code){errEl.textContent='کد را وارد کنید';errEl.classList.add('show');return}
+  const btn=document.getElementById('otpVerifyBtn');
+  btn.disabled=true;const orig=btn.textContent;btn.textContent='...';
+  try{
+    const r=await apiPost('/otp/verify',{phone,code});
+    const data=await r.json().catch(()=>null);
+    if(!r.ok||!data?.success) throw new Error(data?.error||'کد اشتباه است');
+    otpVerified=true;otpVerifiedPhone=phone;
+    document.getElementById('otpRow').style.display='none';
+    document.getElementById('otpVerifiedNote').style.display='block';
+    showToast('✅ شماره موبایل تایید شد');
+  }catch(e){
+    errEl.textContent=e.message;errEl.classList.add('show');
+  }finally{
+    btn.disabled=false;btn.textContent=orig;
+  }
+}
+
 /* ══ SUBMIT ══ */
 async function submitOrder(){
   clearErrs();
@@ -1114,6 +1149,11 @@ async function submitOrder(){
   if(!validPhone(phone)){showErr('orderPhone','phoneErr');err=true}
   if(deliveryMethod==='courier' && !address){showErr('orderAddress','addressErr');err=true}
   if(err){showToast('❌ موارد مشخص‌شده را تکمیل کنید','error');return}
+  if(!otpVerified || otpVerifiedPhone!==phone.replace(/[\s\-]/g,'')){
+    showToast('❌ لطفاً ابتدا شماره موبایل را با کد تایید کنید','error');
+    document.getElementById('otpSendWrap').scrollIntoView({behavior:'smooth',block:'center'});
+    return;
+  }
   const btn=document.getElementById('submitBtn');
   btn.disabled=true;btn.textContent='در حال ثبت سفارش...';
   const orderData={
@@ -1127,18 +1167,21 @@ async function submitOrder(){
     const r=await apiPost('/orders',orderData);
     const data=await r.json().catch(()=>null);
     if(!(r.ok||r.status===201)||!data?.order_id){
-      throw new Error(data?.error||'ثبت سفارش ناموفق بود');
+      throw new Error(data?.error||'order create failed');
     }
-    // فعلاً درگاه پرداخت آنلاین غیرفعاله — سفارش با موفقیت ثبت شد، همین کافیه
-    showToast('🎉 سفارش شما با کد #'+data.order_id+' ثبت شد!');
-    cart={};updateCartUI();closeCart();
-    document.getElementById('trackPhone').value=phone.replace(/[\s\-]/g,'');
-    setTimeout(()=>document.getElementById('track').scrollIntoView({behavior:'smooth',block:'start'}),700);
+    // سفارش ساخته شد — حالا برو مرحله پرداخت آنلاین (زرین‌پال)
+    btn.textContent='در حال اتصال به درگاه پرداخت...';
+    const pr=await apiPost('/payment/request',{order_id:data.order_id});
+    const pd=await pr.json().catch(()=>null);
+    if(!(pr.ok)||!pd?.payment_url){
+      throw new Error(pd?.error||'payment request failed');
+    }
+    // ریدایرکت به درگاه زرین‌پال
+    window.location.href=pd.payment_url;
   }catch(e){
-    showToast('❌ '+(e.message||'خطا در ثبت سفارش'),'error');
+    showToast('❌ '+(e.message&&e.message!=='order create failed'?e.message:'خطا در ثبت سفارش یا اتصال به درگاه پرداخت'),'error');
     window.reportClientError&&window.reportClientError('submitOrder failed: '+e.message,{stack:e.stack});
-  }finally{
-    btn.disabled=false;btn.textContent='ثبت سفارش 🚀';
+    btn.disabled=false;btn.textContent='ثبت و پرداخت سفارش 🚀';
   }
 }
 
@@ -1234,129 +1277,26 @@ const STATUS_COLOR={pending:'rgba(245,197,24,.15)',confirmed:'rgba(34,197,94,.12
 const STATUS_LABEL_FA={pending:'⏳ در انتظار تایید',confirmed:'✅ سفارش تایید شد',preparing:'👨‍🍳 در حال آماده‌سازی',ready:'🎉 آماده تحویل',delivered:'🏍 تحویل داده شد',cancelled:'❌ سفارش لغو شد'};
 let trackPollInterval=null;
 let trackedOrderId=null;
-let otpTimerInterval=null;
-let pendingTrackPhone=null;
-
-/* ══ ذخیره توکن ورود پیگیری — به‌ازای هر شماره جدا (۳۰ روز اعتبار) ══ */
-function getTrackAuth(phone){
-  try{
-    const raw=localStorage.getItem('track_auth_'+phone);
-    if(!raw)return null;
-    const d=JSON.parse(raw);
-    if(!d.token||!d.exp||Date.now()>d.exp)return null;
-    return d.token;
-  }catch{return null;}
-}
-function setTrackAuth(phone,token,expiresInSec){
-  try{localStorage.setItem('track_auth_'+phone,JSON.stringify({token,exp:Date.now()+expiresInSec*1000}));}catch{}
-}
-function clearTrackAuth(phone){try{localStorage.removeItem('track_auth_'+phone);}catch{}}
 
 async function trackOrder(){
   const phone=document.getElementById('trackPhone').value.trim().replace(/[\s\-]/g,'');
   const errEl=document.getElementById('trackError');
   if(!/^09\d{9}$/.test(phone)){errEl.textContent='شماره معتبر وارد کنید (۱۱ رقم با ۰)';errEl.classList.add('show');document.getElementById('trackResult').classList.remove('show');return;}
   errEl.classList.remove('show');
-  document.getElementById('otpBox').style.display='none';
-  clearInterval(otpTimerInterval);
   // قطع پولینگ قبلی — bug fix
   if(trackPollInterval){clearInterval(trackPollInterval);trackPollInterval=null;}
-
-  const token=getTrackAuth(phone);
-  if(token){
-    await doTrack(phone,token);
-  }else{
-    pendingTrackPhone=phone;
-    await sendOtp(phone);
-  }
-}
-
-async function sendOtp(phone){
-  const errEl=document.getElementById('trackError');
   document.getElementById('trackBtn').disabled=true;
   document.getElementById('trackSpinner').style.display='inline-block';
   try{
-    const r=await apiPost('/auth/otp/send',{phone});
-    const data=await r.json().catch(()=>null);
-    if(!r.ok){throw new Error(data?.error||'ارسال کد ناموفق بود');}
-    document.getElementById('otpPhoneDisplay').textContent=phone;
-    document.getElementById('otpBox').style.display='block';
-    document.getElementById('otpCode').value='';
-    document.getElementById('otpCode').focus();
-    startOtpTimer();
-    showToast('📨 کد تایید ارسال شد');
-  }catch(e){
-    errEl.textContent=e.message;errEl.classList.add('show');
-  }finally{
-    document.getElementById('trackBtn').disabled=false;
-    document.getElementById('trackSpinner').style.display='none';
-  }
-}
-
-function startOtpTimer(){
-  clearInterval(otpTimerInterval);
-  let t=60;
-  const resendEl=document.getElementById('otpResend');
-  resendEl.innerHTML='ارسال دوباره کد تا <span id="otpTimer">'+t+'</span> ثانیه دیگر';
-  otpTimerInterval=setInterval(()=>{
-    t--;
-    if(t<=0){
-      clearInterval(otpTimerInterval);
-      resendEl.innerHTML='<a href="#" onclick="resendOtp(event)" style="color:var(--gold)">ارسال دوباره کد</a>';
-      return;
-    }
-    const el=document.getElementById('otpTimer');if(el)el.textContent=t;
-  },1000);
-}
-function resendOtp(e){
-  e.preventDefault();
-  if(pendingTrackPhone)sendOtp(pendingTrackPhone);
-}
-
-async function verifyOtp(){
-  const code=document.getElementById('otpCode').value.trim();
-  const errEl=document.getElementById('trackError');
-  if(!/^\d{6}$/.test(code)){errEl.textContent='کد ۶ رقمی را کامل وارد کنید';errEl.classList.add('show');return;}
-  document.getElementById('otpVerifyBtn').disabled=true;
-  try{
-    const r=await apiPost('/auth/otp/verify',{phone:pendingTrackPhone,code});
-    const data=await r.json().catch(()=>null);
-    if(!r.ok||!data?.token){throw new Error(data?.error||'کد نامعتبر است');}
-    setTrackAuth(pendingTrackPhone,data.token,data.expires_in||2592000);
-    document.getElementById('otpBox').style.display='none';
-    clearInterval(otpTimerInterval);
-    errEl.classList.remove('show');
-    await doTrack(pendingTrackPhone,data.token);
-  }catch(e){
-    errEl.textContent=e.message;errEl.classList.add('show');
-  }finally{
-    document.getElementById('otpVerifyBtn').disabled=false;
-  }
-}
-
-async function doTrack(phone,token){
-  const errEl=document.getElementById('trackError');
-  document.getElementById('trackBtn').disabled=true;
-  document.getElementById('trackSpinner').style.display='inline-block';
-  try{
-    const r=await fetch(`${API}/track?phone=${encodeURIComponent(phone)}`,{headers:{'Authorization':'Bearer '+token}});
-    if(r.status===401){
-      // توکن منقضی/نامعتبر شده — دوباره باید OTP بگیره
-      clearTrackAuth(phone);
-      errEl.textContent='نشست شما منقضی شده — دوباره کد تایید بگیرید';errEl.classList.add('show');
-      pendingTrackPhone=phone;
-      await sendOtp(phone);
-      return;
-    }
+    const r=await apiGet(`/track?phone=${encodeURIComponent(phone)}`);
     const data=await r.json();
     if(!data.length){errEl.textContent='سفارشی با این شماره پیدا نشد';errEl.classList.add('show');document.getElementById('trackResult').classList.remove('show');}
     else{
-      errEl.classList.remove('show');
       trackedOrderId=data[0].id;
       renderTrackResult(data[0]);
       // پولینگ فقط وقتی سفارش هنوز فعاله
       if(data[0].status!=='delivered'&&data[0].status!=='cancelled'){
-        trackPollInterval=setInterval(()=>pollOrderStatus(phone,token),10000);
+        trackPollInterval=setInterval(()=>pollOrderStatus(trackedOrderId),10000);
       }
     }
   }catch(e){errEl.textContent='خطا در بررسی — دوباره امتحان کنید';errEl.classList.add('show');}
@@ -1364,10 +1304,9 @@ async function doTrack(phone,token){
   document.getElementById('trackSpinner').style.display='none';
 }
 
-async function pollOrderStatus(phone,token){
+async function pollOrderStatus(orderId){
   try{
-    const r=await fetch(`${API}/track?phone=${encodeURIComponent(phone)}`,{headers:{'Authorization':'Bearer '+token}});
-    if(r.status===401){clearInterval(trackPollInterval);trackPollInterval=null;return;}
+    const r=await apiGet(`/track?phone=${encodeURIComponent(document.getElementById('trackPhone').value.trim().replace(/[\s\-]/g,''))}`);
     const data=await r.json();
     if(data.length)renderTrackResult(data[0]);
     if(data[0]?.status==='delivered'||data[0]?.status==='cancelled'){clearInterval(trackPollInterval);trackPollInterval=null;}
@@ -1407,7 +1346,6 @@ function renderTrackResult(order){
   document.getElementById('trackResult').classList.add('show');
 }
 document.getElementById('trackPhone').addEventListener('keydown',e=>{if(e.key==='Enter')trackOrder();});
-document.getElementById('otpCode').addEventListener('keydown',e=>{if(e.key==='Enter')verifyOtp();});
 
 /* ══ MAP ══ */
 (function(){
