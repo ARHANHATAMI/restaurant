@@ -14,7 +14,7 @@ if (location.protocol === 'http:') {
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="preconnect" href="https://images.unsplash.com">
 <link rel="dns-prefetch" href="https://api.arhanhatami.ir">
-<link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;700;800;900&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;700;800;900&display=swap" rel="stylesheet">
 <style>
 :root{
   --gold:#f5c518;--gold2:#ffd84d;--gold-dark:#e6b800;
@@ -132,6 +132,7 @@ h1.hero-title .line2{color:var(--gold);display:block}
   animation:heroFloat 6s ease-in-out infinite;
 }
 @keyframes heroFloat{0%,100%{transform:translateY(0) scale(1)}50%{transform:translateY(-12px) scale(1.01)}}
+@media(prefers-reduced-motion:reduce){.hero-img{animation:none}}
 
 /* ══ CATEGORY BAR ══ */
 .category-bar{
@@ -632,7 +633,11 @@ textarea.form-input{height:90px;resize:none}
   <div class="hero-img-wrap">
     <img class="hero-img"
       src="https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=800&q=80&auto=format&fit=crop&fm=webp"
-      alt="برگر عمو رسول" loading="eager" fetchpriority="high" width="800" height="520">
+      srcset="https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=480&q=80&auto=format&fit=crop&fm=webp 480w,
+              https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=800&q=80&auto=format&fit=crop&fm=webp 800w,
+              https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=1200&q=80&auto=format&fit=crop&fm=webp 1200w"
+      sizes="(max-width:900px) 100vw, 50vw"
+      alt="برگر عمو رسول" loading="eager" fetchpriority="high" decoding="async" width="800" height="520">
   </div>
 </section>
 
@@ -687,7 +692,7 @@ textarea.form-input{height:90px;resize:none}
         <div class="deal-items">۱ برگر + ۱ سیب‌زمینی<br>+ ۱ نوشیدنی</div>
         <button class="deal-price-btn" onclick="showToast('🎉 کمبو برگر به سبد اضافه شد!')">۱۸۰ هزار تومان →</button>
       </div>
-      <img class="deal-img" src="https://images.unsplash.com/photo-1553979459-d2229ba7433a?w=320&q=80&auto=format&fit=crop" alt="Burger Combo">
+      <img class="deal-img" src="https://images.unsplash.com/photo-1553979459-d2229ba7433a?w=320&q=80&auto=format&fit=crop" alt="Burger Combo" loading="lazy" decoding="async">
     </div>
     <div class="deal-card red">
       <div class="deal-info">
@@ -695,7 +700,7 @@ textarea.form-input{height:90px;resize:none}
         <div class="deal-items">۲ برگر + ۲ سیب‌زمینی<br>+ ۲ نوشیدنی</div>
         <button class="deal-price-btn" onclick="showToast('🎉 کمبو خانوادگی به سبد اضافه شد!')">۳۲۰ هزار تومان →</button>
       </div>
-      <img class="deal-img" src="https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=320&q=80&auto=format&fit=crop" alt="Family Combo">
+      <img class="deal-img" src="https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=320&q=80&auto=format&fit=crop" alt="Family Combo" loading="lazy" decoding="async">
     </div>
   </div>
 </div>
@@ -930,29 +935,35 @@ function apiGet(path){ return fetch(API+path); }
 
 /* ══ MENU ══ */
 let MENU = [];
+const FALLBACK_MENU=[
+  {id:1,name:'کلاسیک برگر',price:180,emoji:'🍔',tag:'پرفروش‌ترین',available:true},
+  {id:2,name:'برگر عمو رسول',price:220,emoji:'🍔',tag:'ویژه عمو',available:true},
+  {id:3,name:'چیز برگر',price:200,emoji:'🧀',tag:'محبوب',available:true},
+  {id:4,name:'دوبل چیز برگر',price:260,emoji:'🧀',tag:'سنگین!',available:true},
+  {id:5,name:'هات داگ',price:130,emoji:'🌭',tag:'تازه',available:true},
+  {id:6,name:'هات داگ پنیر',price:150,emoji:'🌭',tag:'خاص',available:true},
+  {id:7,name:'رویال برگر',price:280,emoji:'👑',tag:'پیشنهاد ویژه',available:true},
+  {id:8,name:'سیب عمو',price:80,emoji:'🍟',tag:'همراه غذا',available:true},
+];
+// یک درخواست به /menu — بین loadMenu و checkSupabase به اشتراک گذاشته می‌شه
+// (قبلاً هر دو مستقل fetch می‌زدن و دو رفت‌وبرگشت اضافه به سرور در لود اولیه ایجاد می‌شد)
+const menuFetchPromise = apiGet('/menu').then(async r=>{
+  if(!r.ok) throw new Error('bad status');
+  const data = await r.json();
+  if(!data.length) throw new Error('empty');
+  return data;
+}).catch(()=>null);
+
 async function loadMenu(){
-  try{
-    const r = await apiGet('/menu');
-    if(!r.ok) throw new Error();
-    MENU = await r.json();
-    if(!MENU.length) throw new Error('empty');
-  }catch(e){
-    MENU=[
-      {id:1,name:'کلاسیک برگر',price:180,emoji:'🍔',tag:'پرفروش‌ترین',available:true},
-      {id:2,name:'برگر عمو رسول',price:220,emoji:'🍔',tag:'ویژه عمو',available:true},
-      {id:3,name:'چیز برگر',price:200,emoji:'🧀',tag:'محبوب',available:true},
-      {id:4,name:'دوبل چیز برگر',price:260,emoji:'🧀',tag:'سنگین!',available:true},
-      {id:5,name:'هات داگ',price:130,emoji:'🌭',tag:'تازه',available:true},
-      {id:6,name:'هات داگ پنیر',price:150,emoji:'🌭',tag:'خاص',available:true},
-      {id:7,name:'رویال برگر',price:280,emoji:'👑',tag:'پیشنهاد ویژه',available:true},
-      {id:8,name:'سیب عمو',price:80,emoji:'🍟',tag:'همراه غذا',available:true},
-    ];
-  }
+  const data = await menuFetchPromise;
+  MENU = data || FALLBACK_MENU;
   renderMenu(MENU);
 }
 
 function renderMenu(items){
   const g = document.getElementById('menuGrid');
+  // جلوگیری از نشتی حافظه: قبل از جایگزینی innerHTML، observe قدیمی‌ها رو پاک می‌کنیم
+  g.querySelectorAll('.reveal').forEach(el=>revealObs.unobserve(el));
   g.innerHTML = items.map(item=>{
     const m = MENU_META[item.name]||{};
     const img = item.image_url||m.img||FALLBACK;
@@ -963,7 +974,7 @@ function renderMenu(items){
     return `
     <div class="menu-card reveal">
       <div class="menu-card-img-wrap">
-        <img class="menu-card-img" src="${img}" alt="${item.name}" loading="lazy" onerror="this.src='${FALLBACK}'">
+        <img class="menu-card-img" src="${img}" alt="${item.name}" loading="lazy" decoding="async" onerror="this.src='${FALLBACK}'">
         <span class="card-tag ${item.available?tagCls:'tag-na'}">${item.available?(item.tag||''):'ناموجود'}</span>
       </div>
       <div class="menu-card-body">
@@ -1010,12 +1021,11 @@ function filterCat(cat, el){
 }
 
 /* ══ CONNECTION CHECK ══ */
+// همون Promise لود منو رو چک می‌کنه — دیگه فچ جداگانه‌ای به /menu نمی‌زنه
 async function checkSupabase(){
   const dot=document.getElementById('dbDot'),txt=document.getElementById('dbStatusText');
-  try{
-    const r=await apiGet('/menu');
-    if(r.ok){dot.className='db-dot connected';txt.textContent='سرور متصله ✓';return true;}
-  }catch(e){}
+  const data = await menuFetchPromise;
+  if(data){dot.className='db-dot connected';txt.textContent='سرور متصله ✓';return true;}
   dot.className='db-dot';txt.textContent='خطا در اتصال';return false;
 }
 checkSupabase();
@@ -1235,11 +1245,17 @@ function showToast(msg,type=''){
 
 /* ══ NAVBAR SCROLL ══ */
 const navLinks = document.querySelectorAll('.nav-links a');
+let navScrollTicking=false;
 window.addEventListener('scroll',()=>{
-  document.getElementById('navbar').style.background=window.scrollY>40?'rgba(13,13,13,.99)':'rgba(13,13,13,.96)';
-  let cur='home';
-  ['home','menu-section','deals','about','contact'].forEach(id=>{const el=document.getElementById(id);if(el&&window.scrollY>=el.offsetTop-100)cur=id});
-  navLinks.forEach(a=>{a.classList.remove('active');if(a.getAttribute('href')==='#'+cur)a.classList.add('active')});
+  if(navScrollTicking)return;
+  navScrollTicking=true;
+  requestAnimationFrame(()=>{
+    document.getElementById('navbar').style.background=window.scrollY>40?'rgba(13,13,13,.99)':'rgba(13,13,13,.96)';
+    let cur='home';
+    ['home','menu-section','deals','about','contact'].forEach(id=>{const el=document.getElementById(id);if(el&&window.scrollY>=el.offsetTop-100)cur=id});
+    navLinks.forEach(a=>{a.classList.remove('active');if(a.getAttribute('href')==='#'+cur)a.classList.add('active')});
+    navScrollTicking=false;
+  });
 },{passive:true});
 
 /* ══ SMOOTH SCROLL ══ */
@@ -1251,10 +1267,16 @@ document.querySelectorAll('a[href^="#"]').forEach(a=>{
 (function(){
   const sections=['home','menu-section','deals','track','contact'];
   const tabs=['home','menu','deals','track','contact'].map(id=>document.getElementById('tab-'+id));
+  let tabScrollTicking=false;
   window.addEventListener('scroll',()=>{
-    let cur='home';sections.forEach(id=>{const el=document.getElementById(id);if(el&&window.scrollY>=el.offsetTop-130)cur=id==='menu-section'?'menu':id});
-    tabs.forEach(t=>t&&t.classList.remove('active'));
-    const at=document.getElementById('tab-'+cur);if(at)at.classList.add('active');
+    if(tabScrollTicking)return;
+    tabScrollTicking=true;
+    requestAnimationFrame(()=>{
+      let cur='home';sections.forEach(id=>{const el=document.getElementById(id);if(el&&window.scrollY>=el.offsetTop-130)cur=id==='menu-section'?'menu':id});
+      tabs.forEach(t=>t&&t.classList.remove('active'));
+      const at=document.getElementById('tab-'+cur);if(at)at.classList.add('active');
+      tabScrollTicking=false;
+    });
   },{passive:true});
 })();
 
@@ -1352,32 +1374,45 @@ function renderTrackResult(order){
 }
 document.getElementById('trackPhone').addEventListener('keydown',e=>{if(e.key==='Enter')trackOrder();});
 
-/* ══ MAP ══ */
+/* ══ MAP (lazy — فقط وقتی کاربر بهش نزدیک بشه تایل‌ها دانلود می‌شن) ══ */
 (function(){
   const canvas=document.getElementById('mapCanvas');if(!canvas)return;
-  const ctx=canvas.getContext('2d');
-  const lat=37.522537,lng=45.034621,zoom=16,W=canvas.width,H=canvas.height,T=256;
-  const l2t=(lon,z)=>Math.floor((lon+180)/360*Math.pow(2,z));
-  const a2t=(la,z)=>Math.floor((1-Math.log(Math.tan(la*Math.PI/180)+1/Math.cos(la*Math.PI/180))/Math.PI)/2*Math.pow(2,z));
-  const cx=l2t(lng,zoom),cy=a2t(lat,zoom),cols=Math.ceil(W/T)+2,rows=Math.ceil(H/T)+2;
-  const fx=(lng+180)/360*Math.pow(2,zoom)-cx,fy=(1-Math.log(Math.tan(lat*Math.PI/180)+1/Math.cos(lat*Math.PI/180))/Math.PI)/2*Math.pow(2,zoom)-cy;
-  const ox=Math.round(W/2-fx*T),oy=Math.round(H/2-fy*T);
-  ctx.fillStyle='#1a1a2e';ctx.fillRect(0,0,W,H);
-  let n=0,total=cols*rows;
-  for(let dx=0;dx<cols;dx++)for(let dy=0;dy<rows;dy++){
-    const tx=cx+dx-Math.floor(cols/2),ty=cy+dy-Math.floor(rows/2),px=ox+(dx-Math.floor(cols/2))*T,py=oy+(dy-Math.floor(rows/2))*T;
-    const img=new Image();img.crossOrigin='anonymous';img.src=`https://tile.openstreetmap.org/${zoom}/${tx}/${ty}.png`;
-    img.onload=()=>{ctx.drawImage(img,px,py,T,T);n++;if(n===total)pin()};
-    img.onerror=()=>{n++;if(n===total)pin()};
+
+  function initMap(){
+    const ctx=canvas.getContext('2d');
+    const lat=37.522537,lng=45.034621,zoom=16,W=canvas.width,H=canvas.height,T=256;
+    const l2t=(lon,z)=>Math.floor((lon+180)/360*Math.pow(2,z));
+    const a2t=(la,z)=>Math.floor((1-Math.log(Math.tan(la*Math.PI/180)+1/Math.cos(la*Math.PI/180))/Math.PI)/2*Math.pow(2,z));
+    const cx=l2t(lng,zoom),cy=a2t(lat,zoom),cols=Math.ceil(W/T)+2,rows=Math.ceil(H/T)+2;
+    const fx=(lng+180)/360*Math.pow(2,zoom)-cx,fy=(1-Math.log(Math.tan(lat*Math.PI/180)+1/Math.cos(lat*Math.PI/180))/Math.PI)/2*Math.pow(2,zoom)-cy;
+    const ox=Math.round(W/2-fx*T),oy=Math.round(H/2-fy*T);
+    ctx.fillStyle='#1a1a2e';ctx.fillRect(0,0,W,H);
+    let n=0,total=cols*rows;
+    for(let dx=0;dx<cols;dx++)for(let dy=0;dy<rows;dy++){
+      const tx=cx+dx-Math.floor(cols/2),ty=cy+dy-Math.floor(rows/2),px=ox+(dx-Math.floor(cols/2))*T,py=oy+(dy-Math.floor(rows/2))*T;
+      const img=new Image();img.crossOrigin='anonymous';img.src=`https://tile.openstreetmap.org/${zoom}/${tx}/${ty}.png`;
+      img.onload=()=>{ctx.drawImage(img,px,py,T,T);n++;if(n===total)pin()};
+      img.onerror=()=>{n++;if(n===total)pin()};
+    }
+    function pin(){
+      document.getElementById('mapOverlay').style.display='none';
+      ctx.beginPath();ctx.arc(W/2,H/2-4,12,0,Math.PI*2);ctx.fillStyle='#f5c518';ctx.shadowColor='rgba(245,197,24,.6)';ctx.shadowBlur=18;ctx.fill();ctx.shadowBlur=0;
+      ctx.fillStyle='#000';ctx.font='bold 12px sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText('🍔',W/2,H/2-4);
+      ctx.fillStyle='rgba(0,0,0,.8)';ctx.fillRect(W/2-52,H/2+12,104,18);
+      ctx.fillStyle='#fff';ctx.font='bold 10px Vazirmatn,sans-serif';ctx.fillText('عمو رسول',W/2,H/2+21);
+    }
+    setTimeout(()=>{if(!n)pin()},5000);
   }
-  function pin(){
-    document.getElementById('mapOverlay').style.display='none';
-    ctx.beginPath();ctx.arc(W/2,H/2-4,12,0,Math.PI*2);ctx.fillStyle='#f5c518';ctx.shadowColor='rgba(245,197,24,.6)';ctx.shadowBlur=18;ctx.fill();ctx.shadowBlur=0;
-    ctx.fillStyle='#000';ctx.font='bold 12px sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText('🍔',W/2,H/2-4);
-    ctx.fillStyle='rgba(0,0,0,.8)';ctx.fillRect(W/2-52,H/2+12,104,18);
-    ctx.fillStyle='#fff';ctx.font='bold 10px Vazirmatn,sans-serif';ctx.fillText('عمو رسول',W/2,H/2+21);
+
+  // اجرا فقط وقتی canvas نزدیک ویوپورت بشه (کاربر داره به بخش تماس می‌رسه)
+  if('IntersectionObserver' in window){
+    const mapObs=new IntersectionObserver(entries=>{
+      if(entries[0].isIntersecting){ initMap(); mapObs.disconnect(); }
+    },{rootMargin:'300px'});
+    mapObs.observe(canvas);
+  }else{
+    initMap(); // fallback برای مرورگرهای خیلی قدیمی
   }
-  setTimeout(()=>{if(!n)pin()},5000);
 })();
 /* ══ CLIENT ERROR LOGGING ══ */
 (function () {
