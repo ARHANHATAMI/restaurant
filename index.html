@@ -10,12 +10,18 @@ if (location.protocol === 'http:') {
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>عمو رسول | فست فود ارومیه</title>
 <!-- preconnect برای سرعت بارگذاری -->
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="preconnect" href="https://images.unsplash.com">
 <link rel="dns-prefetch" href="https://api.arhanhatami.ir">
-<link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;700;800;900&display=swap" rel="stylesheet">
 <style>
+/* فونت Vazirmatn — self-hosted، چون fonts.googleapis.com/fonts.gstatic.com
+   بدون VPN از ایران فیلتر/کند هست. فایل variable font از همین دامنه سرو می‌شه. */
+@font-face{
+  font-family:'Vazirmatn';
+  src:url('./fonts/Vazirmatn-Variable.woff2') format('woff2-variations'),
+      url('./fonts/Vazirmatn-Variable.woff2') format('woff2');
+  font-weight:100 900;
+  font-style:normal;
+  font-display:swap;
+}
 :root{
   --gold:#f5c518;--gold2:#ffd84d;--gold-dark:#e6b800;
   --red:#e63946;--dark:#0d0d0d;--dark2:#161616;--dark3:#1e1e1e;--dark4:#252525;
