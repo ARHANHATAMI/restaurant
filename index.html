@@ -8,6 +8,10 @@ if (location.protocol === 'http:') {
 </script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<!-- CSP: سایت مشتری فقط به خودش و api.arhanhatami.ir (Worker پروکسی) وصل
+     می‌شه — عکس/نقشه/فونت همه از همون مسیر رد می‌شن. unsafe-inline لازمه
+     چون اسکریپت‌ها و استایل‌ها inline نوشته شدن (بدون build step). -->
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data: https://api.arhanhatami.ir; connect-src 'self' https://api.arhanhatami.ir; base-uri 'none'; form-action 'none'; frame-ancestors 'none';">
 <title>عمو رسول | فست فود ارومیه</title>
 <!-- preconnect برای سرعت بارگذاری -->
 <!-- توجه: دیگه به fonts.googleapis.com / fonts.gstatic.com / images.unsplash.com
