@@ -3,6 +3,11 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<!-- CSP: پنل ادمین به هیچ دامنه‌ای جز خودش و api.arhanhatami.ir وصل نمی‌شه؛
+     unsafe-inline لازمه چون همه‌ی رویدادها با onclick و استایل‌های inline
+     نوشته شدن (بدون build step) — اگه بعداً به nonce/hash مهاجرت شد می‌شه
+     سخت‌گیرانه‌تر کرد. -->
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data: https://api.arhanhatami.ir; connect-src 'self' https://api.arhanhatami.ir; base-uri 'none'; form-action 'none'; frame-ancestors 'none';">
 <title>پنل ادمین | عمو رسول</title>
 <style>
 /* فونت self-hosted — جایگزین Google Fonts (فیلتر بدون VPN) */
@@ -957,8 +962,8 @@ function renderPopular(){
 function renderDashMessages(){
   const el=document.getElementById('dml');
   if(!messages.length){el.innerHTML='<div class="empty"><big>💬</big><p>بدون پیام</p></div>';return;}
-  el.innerHTML=messages.slice(0,4).map(m=>`<div class="msg-item unread">
-    <div class="msg-dot"></div>
+  el.innerHTML=messages.slice(0,4).map(m=>`<div class="msg-item ${m.is_read?'':'unread'}">
+    <div class="msg-dot ${m.is_read?'read':''}"></div>
     <div><div class="msg-title">${esc(m.customer_name)||'ناشناس'} <span style="font-size:10px;color:var(--muted)">${esc(m.phone)||''}</span></div>
     <div class="msg-body">${esc((m.message||'').substring(0,70))}${(m.message||'').length>70?'...':''}</div>
     <div class="msg-time">${ft(m.created_at)}</div></div></div>`).join('');
@@ -968,9 +973,10 @@ function updateBadges(){
   const pend=orders.filter(o=>o.status==='pending').length;
   const nb=document.getElementById('nb');
   nb.textContent=pend;nb.style.display=pend?'inline':'none';
+  const unreadCount=messages.filter(m=>!m.is_read).length;
   const mb=document.getElementById('mb');
-  mb.textContent=messages.length;mb.style.display=messages.length?'inline':'none';
-  document.getElementById('mnd').style.display=messages.length?'block':'none';
+  mb.textContent=unreadCount;mb.style.display=unreadCount?'inline':'none';
+  document.getElementById('mnd').style.display=unreadCount?'block':'none';
 }
 
 // ORDERS PAGE
@@ -1343,8 +1349,8 @@ async function loadMessages(){
 function renderMsgList(){
   const el=document.getElementById('msgList');
   if(!messages.length){el.innerHTML='<div class="empty"><big>💬</big><p>هنوز پیامی نیست</p></div>';return;}
-  el.innerHTML=messages.map((m,i)=>`<div class="msg-item unread" id="mi${i}">
-    <div class="msg-dot" id="md${i}"></div>
+  el.innerHTML=messages.map(m=>`<div class="msg-item ${m.is_read?'':'unread'}" id="mi${m.id}">
+    <div class="msg-dot ${m.is_read?'read':''}" id="md${m.id}"></div>
     <div style="flex:1">
       <div style="display:flex;justify-content:space-between">
         <div class="msg-title">${esc(m.customer_name)||'ناشناس'}</div>
@@ -1354,23 +1360,48 @@ function renderMsgList(){
       <div class="msg-body">${esc(m.message)||''}</div>
       <div style="margin-top:7px;display:flex;gap:5px">
         ${m.phone?`<button class="ca" onclick="window.open('tel:${esc(m.phone)}')">📞 تماس</button>`:''}
-        <button class="ca" onclick="markRead(${i})">✓ خوانده شد</button>
+        ${m.is_read?'':`<button class="ca" onclick="markRead(${m.id})">✓ خوانده شد</button>`}
       </div>
     </div>
   </div>`).join('');
 }
 
-function markRead(i){
-  const d=document.getElementById('md'+i);if(d)d.className='msg-dot read';
-  const el=document.getElementById('mi'+i);if(el)el.style.background='';
+// خوانده‌شدن یه پیام رو تو دیتابیس هم ذخیره می‌کنه (نه فقط تو UI) —
+// قبلاً فقط کلاس CSS عوض می‌شد و با رفرش صفحه یا پولینگ همه‌چی برمی‌گشت
+// به حالت نخوانده.
+async function markRead(id){
+  const m=messages.find(x=>x.id==id);
+  if(m)m.is_read=true;
+  const d=document.getElementById('md'+id);if(d)d.className='msg-dot read';
+  const el=document.getElementById('mi'+id);if(el){el.classList.remove('unread');const b=el.querySelector('.ca[onclick^="markRead"]');if(b)b.remove();}
+  updateBadges();
+  const r=await adminFetch(`/admin/messages/${id}`,{method:'PATCH',body:JSON.stringify({is_read:true})});
+  if(!r.ok){
+    // اگه سرور شکست خورد، وضعیت محلی رو برگردون تا UI دروغ نگه
+    if(m)m.is_read=false;
+    toast('❌ خطا در ذخیره‌سازی — دوباره امتحان کنید','err');
+    renderMsgList();updateBadges();
+    return;
+  }
   toast('✓ خوانده شد','ok');
 }
-function markAllRead(){
-  document.querySelectorAll('.msg-dot').forEach(d=>d.className='msg-dot read');
-  document.querySelectorAll('.msg-item').forEach(el=>el.style.background='');
-  document.getElementById('mb').style.display='none';
-  document.getElementById('mnd').style.display='none';
-  toast('✓ همه خوانده شدند','ok');
+
+async function markAllRead(){
+  const unread=messages.filter(m=>!m.is_read);
+  if(!unread.length){toast('همه پیام‌ها قبلاً خوانده شده‌اند','ok');return;}
+  unread.forEach(m=>m.is_read=true);
+  renderMsgList();updateBadges();
+  if(document.getElementById('page-dashboard')?.classList.contains('active'))renderDashMessages();
+  const results=await Promise.all(unread.map(m=>
+    adminFetch(`/admin/messages/${m.id}`,{method:'PATCH',body:JSON.stringify({is_read:true})}).then(r=>r.ok).catch(()=>false)
+  ));
+  const failed=results.filter(ok=>!ok).length;
+  if(failed){
+    toast(`⚠️ ${failed} پیام ذخیره نشد — دوباره امتحان کنید`,'err');
+    await loadMessages();
+  }else{
+    toast('✓ همه خوانده شدند','ok');
+  }
 }
 
 // DISCOUNTS
