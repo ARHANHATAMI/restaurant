@@ -10,14 +10,17 @@ if (location.protocol === 'http:') {
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>عمو رسول | فست فود ارومیه</title>
 <!-- preconnect برای سرعت بارگذاری -->
+<!-- توجه: دیگه به fonts.googleapis.com / fonts.gstatic.com / images.unsplash.com
+     preconnect نمی‌زنیم چون مستقیماً بهشون وصل نمی‌شیم — همه از api.arhanhatami.ir
+     (Worker) رد می‌شن تا کاربر ایرانی بدون VPN هم سایت رو ببینه -->
+<link rel="preconnect" href="https://api.arhanhatami.ir">
 <link rel="dns-prefetch" href="https://api.arhanhatami.ir">
 <style>
-/* فونت Vazirmatn — self-hosted، چون fonts.googleapis.com/fonts.gstatic.com
-   بدون VPN از ایران فیلتر/کند هست. فایل variable font از همین دامنه سرو می‌شه. */
+/* فونت self-hosted — جایگزین Google Fonts (فیلتر بدون VPN) */
 @font-face{
   font-family:'Vazirmatn';
-  src:url('./fonts/Vazirmatn-Variable.woff2') format('woff2-variations'),
-      url('./fonts/Vazirmatn-Variable.woff2') format('woff2');
+  src:url('./fonts/Vazirmatn[wght].woff2') format('woff2-variations'),
+      url('./fonts/Vazirmatn[wght].woff2') format('woff2');
   font-weight:100 900;
   font-style:normal;
   font-display:swap;
@@ -629,19 +632,19 @@ textarea.form-input{height:90px;resize:none}
     </div>
     <div class="hero-social-proof">
       <div class="avatar-stack">
-        <img src="https://i.pravatar.cc/32?img=1" alt="">
-        <img src="https://i.pravatar.cc/32?img=2" alt="">
-        <img src="https://i.pravatar.cc/32?img=3" alt="">
+        <img src="https://api.arhanhatami.ir/img-ext?url=https%3A%2F%2Fi.pravatar.cc%2F32%3Fimg%3D1" alt="">
+        <img src="https://api.arhanhatami.ir/img-ext?url=https%3A%2F%2Fi.pravatar.cc%2F32%3Fimg%3D2" alt="">
+        <img src="https://api.arhanhatami.ir/img-ext?url=https%3A%2F%2Fi.pravatar.cc%2F32%3Fimg%3D3" alt="">
       </div>
       <div class="social-text"><strong>+۵ هزار</strong> مشتری راضی</div>
     </div>
   </div>
   <div class="hero-img-wrap">
     <img class="hero-img"
-      src="https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=800&q=80&auto=format&fit=crop&fm=webp"
-      srcset="https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=480&q=80&auto=format&fit=crop&fm=webp 480w,
-              https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=800&q=80&auto=format&fit=crop&fm=webp 800w,
-              https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=1200&q=80&auto=format&fit=crop&fm=webp 1200w"
+      src="https://api.arhanhatami.ir/img-ext?url=https%3A%2F%2Fimages.unsplash.com%2Fphoto-1568901346375-23c9450c58cd%3Fw%3D800%26q%3D80%26auto%3Dformat%26fit%3Dcrop%26fm%3Dwebp"
+      srcset="https://api.arhanhatami.ir/img-ext?url=https%3A%2F%2Fimages.unsplash.com%2Fphoto-1568901346375-23c9450c58cd%3Fw%3D480%26q%3D80%26auto%3Dformat%26fit%3Dcrop%26fm%3Dwebp 480w,
+              https://api.arhanhatami.ir/img-ext?url=https%3A%2F%2Fimages.unsplash.com%2Fphoto-1568901346375-23c9450c58cd%3Fw%3D800%26q%3D80%26auto%3Dformat%26fit%3Dcrop%26fm%3Dwebp 800w,
+              https://api.arhanhatami.ir/img-ext?url=https%3A%2F%2Fimages.unsplash.com%2Fphoto-1568901346375-23c9450c58cd%3Fw%3D1200%26q%3D80%26auto%3Dformat%26fit%3Dcrop%26fm%3Dwebp 1200w"
       sizes="(max-width:900px) 100vw, 50vw"
       alt="برگر عمو رسول" loading="eager" fetchpriority="high" decoding="async" width="800" height="520">
   </div>
@@ -698,7 +701,7 @@ textarea.form-input{height:90px;resize:none}
         <div class="deal-items">۱ برگر + ۱ سیب‌زمینی<br>+ ۱ نوشیدنی</div>
         <button class="deal-price-btn" onclick="showToast('🎉 کمبو برگر به سبد اضافه شد!')">۱۸۰ هزار تومان →</button>
       </div>
-      <img class="deal-img" src="https://images.unsplash.com/photo-1553979459-d2229ba7433a?w=320&q=80&auto=format&fit=crop" alt="Burger Combo" loading="lazy" decoding="async">
+      <img class="deal-img" src="https://api.arhanhatami.ir/img-ext?url=https%3A%2F%2Fimages.unsplash.com%2Fphoto-1553979459-d2229ba7433a%3Fw%3D320%26q%3D80%26auto%3Dformat%26fit%3Dcrop" alt="Burger Combo" loading="lazy" decoding="async">
     </div>
     <div class="deal-card red">
       <div class="deal-info">
@@ -706,7 +709,7 @@ textarea.form-input{height:90px;resize:none}
         <div class="deal-items">۲ برگر + ۲ سیب‌زمینی<br>+ ۲ نوشیدنی</div>
         <button class="deal-price-btn" onclick="showToast('🎉 کمبو خانوادگی به سبد اضافه شد!')">۳۲۰ هزار تومان →</button>
       </div>
-      <img class="deal-img" src="https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=320&q=80&auto=format&fit=crop" alt="Family Combo" loading="lazy" decoding="async">
+      <img class="deal-img" src="https://api.arhanhatami.ir/img-ext?url=https%3A%2F%2Fimages.unsplash.com%2Fphoto-1568901346375-23c9450c58cd%3Fw%3D320%26q%3D80%26auto%3Dformat%26fit%3Dcrop" alt="Family Combo" loading="lazy" decoding="async">
     </div>
   </div>
 </div>
@@ -920,8 +923,33 @@ textarea.form-input{height:90px;resize:none}
 // همه درخواست‌ها از طریق Cloudflare Worker — Key سوپابیس توی کد نیست
 const API = 'https://api.arhanhatami.ir';
 
+/* ══ IMAGE PROXY HELPERS ══ */
+// هدف: هیچ عکسی مستقیم از مرورگر کاربر به Unsplash/pravatar/Supabase Storage
+// نره — همه از Worker (api.arhanhatami.ir) رد می‌شن تا بدون VPN هم لود بشن.
+const SUPABASE_STORAGE_PREFIX = 'https://bqpgdvwfvnevoagzdvai.supabase.co/storage/v1/object/public/images/';
+const PROXIED_IMG_HOSTS = ['images.unsplash.com', 'i.pravatar.cc'];
+
+function toProxiedImg(rawUrl){
+  if(!rawUrl) return rawUrl;
+  // قبلاً پروکسی شده — دست نزن
+  if(rawUrl.startsWith(API+'/img')) return rawUrl;
+  // آپلود ادمین از طریق Supabase Storage — از /img/<path> رد می‌شه
+  if(rawUrl.startsWith(SUPABASE_STORAGE_PREFIX)){
+    return API+'/img/'+rawUrl.slice(SUPABASE_STORAGE_PREFIX.length);
+  }
+  try{
+    const u=new URL(rawUrl);
+    if(PROXIED_IMG_HOSTS.includes(u.hostname)){
+      return API+'/img-ext?url='+encodeURIComponent(rawUrl);
+    }
+  }catch{}
+  // دامنه ناشناخته — همون‌طور برمی‌گردونیم (نباید معمولاً پیش بیاد)
+  return rawUrl;
+}
+
 /* ══ MENU DATA (merged) ══ */
-const FALLBACK = 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=400&q=80&auto=format';
+const FALLBACK_RAW = 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=400&q=80&auto=format';
+const FALLBACK = toProxiedImg(FALLBACK_RAW);
 const MENU_META = {
   'کلاسیک برگر':   {img:'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=400&q=80&auto=format', r:'★★★★☆', rv:'۴.۶', rc:'(۳۳۰)', tag:'tag-best'},
   'برگر عمو رسول':{img:'https://images.unsplash.com/photo-1550547660-d9450f859349?w=400&q=80&auto=format', r:'★★★★★', rv:'۴.۹', rc:'(۱۸۰)', tag:'tag-vip'},
@@ -972,7 +1000,7 @@ function renderMenu(items){
   g.querySelectorAll('.reveal').forEach(el=>revealObs.unobserve(el));
   g.innerHTML = items.map(item=>{
     const m = MENU_META[item.name]||{};
-    const img = item.image_url||m.img||FALLBACK;
+    const img = toProxiedImg(item.image_url) || toProxiedImg(m.img) || FALLBACK;
     const tagCls = TAG_MAP[item.tag]||m.tag||'tag-new';
     const rating = (m.r||'★★★★☆') + ' ' + (m.rv||'۴.۵');
     const rCount = m.rc||'(۱۰۰)';
@@ -1396,7 +1424,7 @@ document.getElementById('trackPhone').addEventListener('keydown',e=>{if(e.key===
     let n=0,total=cols*rows;
     for(let dx=0;dx<cols;dx++)for(let dy=0;dy<rows;dy++){
       const tx=cx+dx-Math.floor(cols/2),ty=cy+dy-Math.floor(rows/2),px=ox+(dx-Math.floor(cols/2))*T,py=oy+(dy-Math.floor(rows/2))*T;
-      const img=new Image();img.crossOrigin='anonymous';img.src=`https://tile.openstreetmap.org/${zoom}/${tx}/${ty}.png`;
+      const img=new Image();img.crossOrigin='anonymous';img.src=`${API}/tiles/${zoom}/${tx}/${ty}.png`;
       img.onload=()=>{ctx.drawImage(img,px,py,T,T);n++;if(n===total)pin()};
       img.onerror=()=>{n++;if(n===total)pin()};
     }
